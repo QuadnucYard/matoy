@@ -1,0 +1,9 @@
+AlwaysBreakTemplateDeclarations: Leave
+ColumnLimit: 120
+IndentWidth: 4
+InsertNewlineAtEOF: true
+PointerAlignment: Left
+ReflowComments: true
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
