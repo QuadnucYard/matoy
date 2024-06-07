@@ -1,17 +1,10 @@
 #pragma once
 
-#include "matoy/utils/match.hpp"
 #include <cstdint>
 
 namespace matoy::syntax {
 
-enum class Token : int8_t {
-    End,
-    Error,
-
-    Space,
-    LineComment,
-    BlockComment,
+enum class SyntaxKind : int8_t {
 
     Dot,       // .
     Comma,     // ,
@@ -42,22 +35,20 @@ enum class Token : int8_t {
     LBrace,   // {
     RBrace,   // }
 
+    Code,
+    CodeBlock,
+    Parenthesized,
+
     Ident,
     Int,
     Float,
     Number,
+
+    Unary,
+    Binary,
+    FieldAccess,
+    FuncCall,
+    Args,
 };
-
-inline bool is_trivia(Token token) {
-    return utils::is_in(token, Token::LineComment, Token::BlockComment, Token::Space);
-}
-
-inline bool is_error(Token token) {
-    return token == Token::Error;
-}
-
-inline bool is_keyword(Token) {
-    return false;
-}
 
 } // namespace matoy::syntax

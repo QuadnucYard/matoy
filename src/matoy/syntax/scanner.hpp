@@ -1,7 +1,7 @@
 #pragma once
 
 #include <concepts>
-#include <sstream>
+#include <optional>
 #include <string_view>
 
 namespace matoy::syntax {
@@ -9,51 +9,51 @@ namespace matoy::syntax {
 class Scanner {
 
   public:
-    Scanner(const std::istream& s) { this->s << s.rdbuf(); }
-    Scanner(std::string_view s) { this->s << s; }
+    Scanner(std::string_view s) : str_{s} {}
 
-    size_t cursor() { return this->s.tellg(); }
+    size_t cursor() const {
+        return cursor_;
+    }
 
-    std::string_view get(size_t start, size_t end) const { return this->s.view().substr(start, end - start); }
+    std::string_view get(size_t start, size_t end) const {
+        return str_.substr(start, end - start);
+    }
 
     std::optional<char> eat() {
-        char c = this->s.get();
-        if (this->s) { // avoid reading EOF
-            return c;
-        } else {
+        if (cursor_ == str_.length()) {
             return std::nullopt;
+        } else {
+            return str_[cursor_++];
         }
     }
 
     bool eat_if(char c) {
-        if (this->s.peek() == c) {
-            this->s.get();
+        if (str_[cursor_] == c) {
+            cursor_++;
             return true;
         }
         return false;
     }
 
-    template <std::same_as<char>... Args>
-    bool eat_if(Args... args) {
+    bool eat_if(std::same_as<char> auto... args) {
         return (this->eat_if(args) || ...);
     }
 
-    template <std::predicate<char> Pred>
-    void eat_while(Pred pred) {
-        while (pred(this->s.peek())) {
-            this->s.get();
+    void eat_while(std::predicate<char> auto pred) {
+        while (pred(str_[cursor_])) {
+            cursor_++;
         }
     }
 
-    template <std::predicate<char> Pred>
-    void eat_until(Pred pred) {
+    void eat_until(std::predicate<char> auto pred) {
         do {
-            this->s.get();
-        } while (!pred(this->s.peek()));
+            cursor_++;
+        } while (!pred(str_[cursor_]));
     }
 
   private:
-    std::stringstream s;
+    std::string_view str_;
+    size_t cursor_{0};
 };
 
 } // namespace matoy::syntax

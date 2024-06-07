@@ -1,18 +1,31 @@
 #pragma once
 
 #include "scanner.hpp"
+#include "span.hpp"
 #include "token.hpp"
 #include <cctype>
 #include <optional>
+#include <string>
+#include <string_view>
 
 namespace matoy::syntax {
 
 class Lexer {
 
   public:
-    Lexer(Scanner&& s) : s{std::move(s)} {}
+    Lexer(std::string_view text) : s{text} {}
 
-    Token next();
+    size_t cursor() const {
+        return this->s.cursor();
+    }
+
+    std::optional<std::string> take_error() {
+        return std::move(err);
+    }
+
+    Spanned<Token> next();
+
+    Token next_token();
 
   private:
     Token whitespace();

@@ -1,18 +1,32 @@
 #include "lexer.hpp"
 #include "chars.hpp"
+#include "matoy/utils/match.hpp"
 #include <cstdlib>
 #include <format>
 #include <string>
 
 namespace matoy::syntax {
 
-auto is_newline(char c) -> bool { return is_in(c, '\n', '\r', '\0x0b', '\0x0c'); }
+auto is_newline(char c) -> bool {
+    return utils::is_in(c, '\n', '\r', '\0x0b', '\0x0c');
+}
 
-auto is_id_start(char c) -> bool { return c == '_' || is_alpha(c); }
+auto is_id_start(char c) -> bool {
+    return c == '_' || is_alpha(c);
+}
 
-auto is_id_continue(char c) -> bool { return c == '_' || is_alnum(c); }
+auto is_id_continue(char c) -> bool {
+    return c == '_' || is_alnum(c);
+}
 
-Token Lexer::next() {
+Spanned<Token> Lexer::next() {
+    auto start = this->s.cursor();
+    auto token = this->next_token();
+    auto end = this->s.cursor();
+    return Spanned{token, {start, end}};
+}
+
+Token Lexer::next_token() {
     if (auto c_ = this->s.eat()) {
         auto c = *c_;
         if (is_space(c)) {

@@ -9,18 +9,21 @@
 
 namespace matoy::syntax {
 
-template <typename T, typename... Args>
-inline auto is_in(const T& value, const Args&&... args) {
-    return ((value == args) || ...);
+inline auto is_space(char c) -> bool {
+    return std::isspace(c);
 }
 
-inline auto is_space(char c) -> bool { return std::isspace(c); }
+inline auto is_alpha(char c) -> bool {
+    return std::isalpha(c);
+}
 
-inline auto is_alpha(char c) -> bool { return std::isalpha(c); }
+inline auto is_digit(char c) -> bool {
+    return std::isdigit(c);
+}
 
-inline auto is_digit(char c) -> bool { return std::isdigit(c); }
-
-inline auto is_alnum(char c) -> bool { return std::isalnum(c); }
+inline auto is_alnum(char c) -> bool {
+    return std::isalnum(c);
+}
 
 template <std::integral T>
 inline auto parse_int(std::string_view s, int base = 10) -> std::optional<T> {
