@@ -27,6 +27,7 @@ Spanned<Token> Lexer::next() {
 }
 
 Token Lexer::next_token() {
+    auto start = this->s.cursor();
     if (auto c_ = this->s.eat()) {
         auto c = *c_;
         if (is_space(c)) {
@@ -42,7 +43,6 @@ Token Lexer::next_token() {
                 return this->error("unexpected end of block comment");
             }
         }
-        auto start = this->s.cursor();
         return this->code(start, c);
     } else {
         return Token::End;
@@ -171,7 +171,7 @@ Token Lexer::number(size_t start, char c) {
             base = 16;
         }
         if (base != 10) {
-            start++;
+            start = this->s.cursor();
         }
     }
 
@@ -179,13 +179,15 @@ Token Lexer::number(size_t start, char c) {
     this->s.eat_while(base == 16 ? is_alnum : is_digit);
 
     // Next is the fraction part
+    bool is_float = false;
     if (this->s.eat_if('.')) {
+        is_float = true;
         this->s.eat_while(is_digit);
     }
 
     auto end = this->s.cursor();
     auto num = this->s.get(start, end);
-    if (parse_int<int64_t>(num)) {
+    if (!is_float && parse_int<int64_t>(num)) {
         return Token::Int;
     } else if (parse_double(num)) {
         return Token::Float;

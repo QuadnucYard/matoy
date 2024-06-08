@@ -5,44 +5,10 @@
 namespace matoy::syntax {
 
 enum class SyntaxKind : int8_t {
+    Error,
 
-    Dot,       // .
-    Comma,     // ,
-    Colon,     // :
-    Semicolon, // ;
-
-    Plus,    // +
-    PlusEq,  // +=
-    Minus,   // -
-    MinusEq, // -=
-    Star,    // *
-    StarEq,  // *=
-    Slash,   // /
-    SlashEq, // /=
-    Excl,    // !
-    ExclEq,  // !=
-    Eq,      // =
-    EqEq,    // ==
-    Lt,      // <
-    LtEq,    // <=
-    Gt,      //  >
-    GtEq,    // >=
-
-    LParen,   // (
-    RParen,   // )
-    LBracket, // [
-    RBracket, // ]
-    LBrace,   // {
-    RBrace,   // }
-
-    Code,
     CodeBlock,
     Parenthesized,
-
-    Ident,
-    Int,
-    Float,
-    Number,
 
     Unary,
     Binary,

@@ -12,7 +12,7 @@ struct Parser::Impl {
     static auto code(Parser& p, std::predicate<Parser&> auto stop) -> void {
         auto m = p.marker();
         code_exprs(p, stop);
-        p.reduce(m, SyntaxKind::Code);
+        p.reduce(m, SyntaxKind::CodeBlock);
     }
 
     static auto code_exprs(Parser& p, std::predicate<Parser&> auto stop) -> void {
@@ -124,7 +124,7 @@ auto Parser::parse(std::string_view text) -> SyntaxNode {
     auto m = p.marker();
     p.skip();
     Parser::Impl::code_exprs(p, [](Parser&) { return false; });
-    p.reduce_all(m, SyntaxKind::Code);
+    p.reduce_all(m, SyntaxKind::CodeBlock);
     return p.finish().at(0);
 }
 

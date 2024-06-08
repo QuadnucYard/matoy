@@ -45,7 +45,6 @@ enum class Token : int8_t {
     Ident,
     Int,
     Float,
-    Number,
 };
 
 inline bool is_trivia(Token token) {
