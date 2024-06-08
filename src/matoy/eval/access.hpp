@@ -3,7 +3,6 @@
 #include "fwd.hpp"
 #include "matoy/eval/vm.hpp"
 #include "matoy/syntax/ast.hpp"
-#include <variant>
 
 namespace matoy::eval {
 
@@ -18,7 +17,7 @@ template <> auto access(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceRe
 
 template <>
 inline auto access(const syntax::ast::Ident& self, Vm& vm) -> diag::SourceResult<Value*> {
-    return vm.scopes.get(self.get()).value();
+    return vm.scopes.get_mut(self.get()).value();
 }
 
 template <>
@@ -38,33 +37,28 @@ inline auto access(const syntax::ast::FuncCall& self, Vm& vm) -> diag::SourceRes
 
 template <>
 inline auto access(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value*> {
-    // auto ret = self.visit(utils::overloaded{
-    //     [vm](const syntax::ast::Ident& v) mutable -> diag::SourceResult<Value*> {
-    //         auto ret = access(v, vm);
-    //         std::println("Access expr ident {}", ret.value()->index());
-    //         return ret;
-    //     },
-    //     // [vm](const syntax::ast::Parenthesized& v) mutable { return access(v, vm); },
-    //     // [vm](const syntax::ast::FieldAccess& v) mutable { return access(v, vm); },
-    //     // [vm](const syntax::ast::FuncCall& v) mutable { return access(v, vm); },
-    //     [vm](const auto&) mutable -> diag::SourceResult<Value*> {
-    //         std::println("Access expr failed???????");
-    //         return std::unexpected{std::vector<diag::SourceDiagnostic>{}};
-    //     },
-    // });
-    if (std::holds_alternative<syntax::ast::Ident>(self)) {
-        return access(std::get<syntax::ast::Ident>(self), vm).value();
-    }
-    if (std::holds_alternative<syntax::ast::Parenthesized>(self)) {
-        return access(std::get<syntax::ast::Parenthesized>(self), vm).value();
-    }
-    if (std::holds_alternative<syntax::ast::FieldAccess>(self)) {
-        return access(std::get<syntax::ast::FieldAccess>(self), vm).value();
-    }
-    if (std::holds_alternative<syntax::ast::FuncCall>(self)) {
-        return access(std::get<syntax::ast::FuncCall>(self), vm).value();
-    }
-    throw "";
+    return self.visit(utils::overloaded{
+        [&vm](const syntax::ast::Ident& v) { return access(v, vm); },
+        [&vm](const syntax::ast::Parenthesized& v) { return access(v, vm); },
+        [&vm](const syntax::ast::FieldAccess& v) { return access(v, vm); },
+        [&vm](const syntax::ast::FuncCall& v) { return access(v, vm); },
+        [](const auto&) -> diag::SourceResult<Value*> {
+            return std::unexpected{std::vector<diag::SourceDiagnostic>{}};
+        },
+    });
+    // if (std::holds_alternative<syntax::ast::Ident>(self)) {
+    //     return access(std::get<syntax::ast::Ident>(self), vm).value();
+    // }
+    // if (std::holds_alternative<syntax::ast::Parenthesized>(self)) {
+    //     return access(std::get<syntax::ast::Parenthesized>(self), vm).value();
+    // }
+    // if (std::holds_alternative<syntax::ast::FieldAccess>(self)) {
+    //     return access(std::get<syntax::ast::FieldAccess>(self), vm).value();
+    // }
+    // if (std::holds_alternative<syntax::ast::FuncCall>(self)) {
+    //     return access(std::get<syntax::ast::FuncCall>(self), vm).value();
+    // }
+    // throw "";
 }
 
 } // namespace matoy::eval

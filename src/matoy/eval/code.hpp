@@ -108,7 +108,7 @@ inline auto eval(const syntax::ast::FuncCall& self, Vm& vm) -> diag::SourceResul
 
 template <>
 inline auto eval(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value> {
-    auto v = self.visit([vm](auto& e) mutable -> diag::SourceResult<Value> { return eval(e, vm); });
+    auto v = self.visit([&vm](auto& e) -> diag::SourceResult<Value> { return eval(e, vm); });
     return v;
 }
 
