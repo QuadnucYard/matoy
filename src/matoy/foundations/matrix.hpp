@@ -31,13 +31,31 @@ class Matrix {
         return std::mdspan(data.data(), rows, cols);
     }
 
+    Self transposed() const {
+        auto res{Matrix::zeros(cols, rows)};
+        for (size_t i{0}; i < rows; i++) {
+            for (size_t j{0}; j < cols; j++) {
+                res[j, i] = (*this)[i, j];
+            }
+        }
+        return res;
+    }
+
 #pragma region operators
 
-    Self operator+() {
+    const value_type& operator[](size_t i, size_t j) const {
+        return data[i * cols + j];
+    }
+
+    value_type& operator[](size_t i, size_t j) {
+        return data[i * cols + j];
+    }
+
+    Self operator+() const {
         return *this;
     }
 
-    Self operator-() {
+    Self operator-() const {
         auto res{*this};
         for (size_t i{0}; i < data.size(); i++) {
             res.data[i] -= res.data[i];

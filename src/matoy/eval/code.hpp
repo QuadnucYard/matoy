@@ -3,6 +3,7 @@
 #include "matoy/diag.hpp"
 #include "matoy/eval/access.hpp"
 #include "matoy/eval/ops.hpp"
+#include "matoy/foundations/fields.hpp"
 #include "matoy/foundations/matrix.hpp"
 #include "matoy/syntax/ast.hpp"
 #include "vm.hpp"
@@ -123,7 +124,9 @@ inline auto eval(const syntax::ast::Binary& self, Vm& vm) -> diag::SourceResult<
 
 template <>
 inline auto eval(const syntax::ast::FieldAccess& self, Vm& vm) -> diag::SourceResult<Value> {
-    return {};
+    auto value = eval(self.target(), vm);
+    auto field = self.field();
+    return *foundations::get_field(*value, field.get());
 }
 
 template <>

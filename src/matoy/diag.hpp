@@ -2,9 +2,13 @@
 
 #include <concepts>
 #include <expected>
+#include <string>
 #include <vector>
 
 namespace matoy::diag {
+
+template <typename T>
+using StrResult = std::expected<T, std::string>;
 
 struct Hints {
     std::vector<std::string> v;

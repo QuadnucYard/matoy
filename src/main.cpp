@@ -88,7 +88,7 @@ void test_eval() {
     A := [1 + 6, 2 - (4 * 1);
             -31,        4.73]
     B := [1, 2]
-    C := [3; 4]
+    C := [3, 4].T
     B * C
     )"};
     print_tokens(input);

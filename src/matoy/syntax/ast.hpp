@@ -64,7 +64,11 @@ struct Matrix : AstNode {
     auto items() const;
 };
 
-struct FieldAccess : AstNode {};
+struct FieldAccess : AstNode {
+    auto target() const -> Expr;
+
+    auto field() const -> Ident;
+};
 
 struct FuncCall : AstNode {};
 
@@ -156,6 +160,14 @@ inline auto Matrix::items() const {
 
 inline auto Unary::expr() const -> Expr {
     return n.cast_last_match<Expr>().value();
+}
+
+inline auto FieldAccess::target() const -> Expr {
+    return n.cast_first_match<Expr>().value();
+}
+
+inline auto FieldAccess::field() const -> Ident {
+    return n.cast_last_match<Ident>().value();
 }
 
 } // namespace ast
