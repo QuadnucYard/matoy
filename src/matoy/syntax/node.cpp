@@ -26,6 +26,13 @@ Token SyntaxNode::token() const {
     });
 }
 
+SyntaxKind SyntaxNode::kind() const {
+    return v.visit(overloaded{
+        [](const LeafNode&) { return SyntaxKind::Error; },
+        [](const InnerNode& inner) { return inner.kind; },
+    });
+}
+
 InnerNode::InnerNode(SyntaxKind kind, std::vector<SyntaxNode> children) : kind{kind}, children{std::move(children)} {
     for (auto& child : this->children) {
         len += child.len();
