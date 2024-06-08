@@ -11,7 +11,7 @@
 namespace matoy::eval {
 
 template <typename T>
-auto eval(const T& self, Vm& vm) -> diag::SourceResult<Value>;
+auto eval(const T& self, Vm& vm) -> diag::SourceResult<Value> = delete;
 
 template <> auto eval(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
 
@@ -133,8 +133,7 @@ inline auto eval(const syntax::ast::FuncCall& self, Vm& vm) -> diag::SourceResul
 
 template <>
 inline auto eval(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value> {
-    auto v = self.visit([&vm](auto& e) -> diag::SourceResult<Value> { return eval(e, vm); });
-    return v;
+    return self.visit([&vm](auto& e) -> diag::SourceResult<Value> { return eval(e, vm); });
 }
 
 inline auto apply_binary(const syntax::ast::Binary& binary, Vm& vm,

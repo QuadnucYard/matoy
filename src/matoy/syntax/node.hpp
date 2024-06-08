@@ -35,7 +35,7 @@ struct InnerNode {
 };
 
 template <typename T>
-auto from_untyped(const SyntaxNode& node) -> std::optional<T>;
+auto from_untyped(const SyntaxNode& node) -> std::optional<T> = delete;
 
 struct SyntaxNode {
     std::variant<LeafNode, InnerNode> v;
