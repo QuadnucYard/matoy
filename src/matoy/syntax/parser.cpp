@@ -198,7 +198,7 @@ void Parser::save() {
         auto message = lexer.take_error().value();
         // get lex error
     } else {
-        nodes.push_back(SyntaxNode::leaf(current, text));
+        nodes.push_back(SyntaxNode::leaf(current, text, {current_start, current_end()}));
     }
     if (!is_trivia(current)) {
         prev_end = current_end();

@@ -41,8 +41,8 @@ struct SyntaxNode {
     std::variant<LeafNode, InnerNode> v;
 
     // Create a new leaf node.
-    static SyntaxNode leaf(Token token, std::string_view text) {
-        return {LeafNode{token, text}};
+    static SyntaxNode leaf(Token token, std::string_view text, Span span = {}) {
+        return {LeafNode{token, text, span}};
     }
 
     // Create a new inner node with children.
@@ -65,6 +65,8 @@ struct SyntaxNode {
     const InnerNode* as_inner() const {
         return std::get_if<InnerNode>(&v);
     }
+
+    Span span() const;
 
     size_t len() const;
 

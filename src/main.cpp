@@ -19,14 +19,6 @@ std::string escape_chars(std::string_view str) {
     return s.str();
 }
 
-void test_lexer() {
-    std::string_view input{"A = -3.876+ Aa - (bb * af / 13 + 5.765) "};
-    Lexer lexer{input};
-    for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
-        std::println("{}[{}:{}]", magic_enum::enum_name(t.v), t.span.start, t.span.end);
-    }
-}
-
 template <>
 struct std::formatter<Token> : std::formatter<char> {
     auto format(const Token& token, format_context& ctx) const {
@@ -41,11 +33,29 @@ struct std::formatter<SyntaxKind> : std::formatter<char> {
     }
 };
 
+template <>
+struct std::formatter<Span> : std::formatter<char> {
+    auto format(const Span& span, format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}:{}", span.start, span.end);
+    }
+};
+
+void print_tokens(std::string_view input) {
+    Lexer lexer{input};
+    for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
+        std::println("{}[{}] `{}`", magic_enum::enum_name(t.v), t.span,
+                     escape_chars(input.substr(t.span.start, t.span.end - t.span.start)));
+    }
+}
+
 void print_node(const SyntaxNode& node, int depth = 0) {
     node.v.visit(overloaded{
-        [depth](const LeafNode& leaf) { std::println("{:>{}}{} `{}`", "", depth * 2, leaf.token, leaf.text); },
+        [depth](const LeafNode& leaf) {
+            std::println("{:>{}}{} `{}` [{}]", "", depth * 2, leaf.token, leaf.text, leaf.span);
+        },
         [depth](const InnerNode& inner) {
-            std::println("{:>{}}{} ({}, {})", "", depth * 2, inner.kind, inner.len, inner.descendants);
+            std::println("{:>{}}{} [{}] (len: {}, desc: {})", "", depth * 2, inner.kind, inner.span, inner.len,
+                         inner.descendants);
             for (auto& child : inner.children) {
                 print_node(child, depth + 1);
             }
@@ -53,18 +63,23 @@ void print_node(const SyntaxNode& node, int depth = 0) {
     });
 }
 
+void test_lexer() {
+    std::string_view input{"A = -3.876+ Aa - (bb * af / 13 + 5.765) "};
+    print_tokens(input);
+}
+
+void print_syntax(std::string_view input) {
+    auto node = Parser::parse(input);
+    print_node(node);
+}
+
 void test_parser() {
     std::string_view input{R"(
     A := [1 + 6, 2 - (4 * 1);
             -31,        4.73]
     )"};
-    Lexer lexer{input};
-    for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
-        std::println("{}[{}:{}] `{}`", magic_enum::enum_name(t.v), t.span.start, t.span.end,
-                     escape_chars(input.substr(t.span.start, t.span.end - t.span.start)));
-    }
-    auto node = Parser::parse(input);
-    print_node(node);
+    print_tokens(input);
+    print_syntax(input);
     return;
 }
 
@@ -76,17 +91,16 @@ void test_eval() {
     C := [3; 4]
     B * C
     )"};
+    print_tokens(input);
+    print_syntax(input);
     eval::Scope scope{};
     auto output = eval::eval_string(input, std::move(scope));
     std::println("done!");
     if (output) {
         std::println("output: {}", output.value());
     }
-    // dbg(output);
 }
 
 int main() {
-    // test_lexer();
-    test_parser();
     test_eval();
 }
