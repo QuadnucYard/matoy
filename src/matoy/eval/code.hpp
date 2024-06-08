@@ -3,8 +3,10 @@
 #include "matoy/diag.hpp"
 #include "matoy/eval/access.hpp"
 #include "matoy/eval/ops.hpp"
+#include "matoy/foundations/matrix.hpp"
 #include "matoy/syntax/ast.hpp"
 #include "vm.hpp"
+#include <variant>
 
 namespace matoy::eval {
 
@@ -34,6 +36,25 @@ inline auto eval(const syntax::ast::Int& self, Vm&) -> diag::SourceResult<Value>
 template <>
 inline auto eval(const syntax::ast::Float& self, Vm&) -> diag::SourceResult<Value> {
     return self.get();
+}
+
+template <>
+inline auto eval(const syntax::ast::Matrix& self, Vm& vm) -> diag::SourceResult<Value> {
+    auto [rows, cols] = self.shape();
+    std::vector<double> elems;
+    for (auto& item : self.items()) {
+        auto val = eval(item, vm);
+        if (!val)
+            return val;
+        if (auto p = std::get_if<int64_t>(&*val)) {
+            elems.push_back(*p);
+        } else if (auto p = std::get_if<double>(&*val)) {
+            elems.push_back(*p);
+        } else {
+            throw "todo!";
+        }
+    }
+    return foundations::Matrix(rows, cols, elems);
 }
 
 template <>
@@ -140,7 +161,7 @@ inline auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
 inline auto decl_assign(const syntax::ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value> {
     auto ident = std::get<syntax::ast::Ident>(binary.lhs());
     auto rhs = eval(binary.rhs(), vm);
-    vm.define(ident.get(), *rhs);
+    vm.define(ident.get(), Value{*rhs});
     return rhs;
 }
 

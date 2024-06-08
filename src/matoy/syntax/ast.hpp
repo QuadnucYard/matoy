@@ -40,14 +40,28 @@ struct Float : AstNode {
 };
 
 struct Parenthesized;
+struct MatrixRow;
+struct Matrix;
 struct Unary;
 struct Binary;
 struct FieldAccess;
 struct FuncCall;
-using Expr = std::variant<CodeBlock, Ident, Int, Float, Parenthesized, Unary, Binary, FieldAccess, FuncCall>;
+using Expr = std::variant<CodeBlock, Ident, Int, Float, Parenthesized, Matrix, Unary, Binary, FieldAccess, FuncCall>;
 
 struct Parenthesized : AstNode {
     auto expr() const -> Expr;
+};
+
+struct MatrixRow : AstNode {
+    auto extent() const -> size_t;
+};
+
+struct Matrix : AstNode {
+    auto extent() const -> size_t;
+
+    auto shape() const -> std::pair<size_t, size_t>;
+
+    auto items() const;
 };
 
 struct FieldAccess : AstNode {};
@@ -100,6 +114,46 @@ inline auto Parenthesized::expr() const -> Expr {
     return n.cast_first_match<Expr>().value();
 }
 
+inline auto MatrixRow::extent() const -> size_t {
+    size_t len{};
+    for (auto& child : n.as_inner()->children) {
+        if (child.cast<Expr>()) {
+            len++;
+        }
+    }
+    return len;
+}
+
+inline auto Matrix::extent() const -> size_t {
+    size_t len{};
+    for (auto& child : n.as_inner()->children) {
+        if (child.cast<MatrixRow>()) {
+            len++;
+        }
+    }
+    return len;
+}
+
+inline auto Matrix::shape() const -> std::pair<size_t, size_t> {
+    size_t rows{extent()};
+    size_t cols{n.cast_first_match<MatrixRow>()->extent()};
+    return {rows, cols};
+}
+
+inline auto Matrix::items() const {
+    std::vector<Expr> res;
+    for (auto& ch : n.as_inner()->children) {
+        if (auto row = ch.cast<MatrixRow>()) {
+            for (auto& item : row->n.as_inner()->children) {
+                if (auto it = item.cast<Expr>()) {
+                    res.push_back(*it);
+                }
+            }
+        }
+    }
+    return res;
+}
+
 inline auto Unary::expr() const -> Expr {
     return n.cast_last_match<Expr>().value();
 }
@@ -132,6 +186,8 @@ IMPL_TYPED0(Float)
 
 IMPL_TYPED(CodeBlock)
 IMPL_TYPED(Parenthesized)
+IMPL_TYPED(MatrixRow)
+IMPL_TYPED(Matrix)
 IMPL_TYPED(Unary)
 IMPL_TYPED(Binary)
 IMPL_TYPED(FieldAccess)
@@ -160,6 +216,10 @@ inline auto from_untyped<ast::Expr>(const SyntaxNode& node) -> std::optional<ast
             return ast::CodeBlock{node};
         case SyntaxKind::Parenthesized:
             return ast::Parenthesized{node};
+        // case SyntaxKind::MatrixRow:
+        //     return ast::MatrixRow{node};
+        case SyntaxKind::Matrix:
+            return ast::Matrix{node};
         case SyntaxKind::Unary:
             return ast::Unary{node};
         case SyntaxKind::Binary:

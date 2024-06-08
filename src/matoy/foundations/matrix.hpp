@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cassert>
+#include <format>
 #include <mdspan>
+#include <ranges>
 #include <vector>
 
 namespace matoy::foundations {
@@ -11,6 +13,8 @@ class Matrix {
     using Self = Matrix;
 
   public:
+    Matrix(size_t rows, size_t cols, std::ranges::input_range auto&& data) : rows{rows}, cols{cols}, data{data} {}
+
     static Matrix zeros(size_t rows, size_t cols) {
         Matrix res;
         res.rows = rows;
@@ -79,13 +83,13 @@ class Matrix {
 
     friend Self operator*(const Self& lhs, const Self& rhs) {
         // TODO assert
-        auto res{Self::zeros(lhs.rows, lhs.cols)};
+        auto res{Self::zeros(lhs.rows, rhs.cols)};
         auto v{res.view()};
         auto v1{lhs.view()};
         auto v2{rhs.view()};
         for (size_t i{0}; i < lhs.rows; i++) {
-            for (size_t k{0}; i < lhs.cols; i++) {
-                for (size_t j{0}; i < rhs.cols; i++) {
+            for (size_t k{0}; k < lhs.cols; k++) {
+                for (size_t j{0}; j < rhs.cols; j++) {
                     v[i, j] += v1[i, k] * v2[k, j];
                 }
             }
@@ -170,6 +174,8 @@ class Matrix {
     size_t rows;
     size_t cols;
     std::vector<value_type> data;
+
+    friend struct std::formatter<matoy::foundations::Matrix>;
 };
 
 } // namespace matoy::foundations
@@ -177,3 +183,22 @@ class Matrix {
 #ifdef assert
 #undef assert
 #endif
+
+template <>
+struct std::formatter<matoy::foundations::Matrix> : std::formatter<char> {
+    auto format(const matoy::foundations::Matrix& mat, format_context& ctx) const {
+        std::format_to(ctx.out(), "[");
+        for (size_t i = 0; i < mat.rows; i++) {
+            if (i != 0) {
+                std::format_to(ctx.out(), "; ");
+            }
+            for (size_t j = 0; j < mat.cols; j++) {
+                if (j != 0) {
+                    std::format_to(ctx.out(), ", ");
+                }
+                std::format_to(ctx.out(), "{}", mat.view()[i, j]);
+            }
+        }
+        return std::format_to(ctx.out(), "]");
+    }
+};

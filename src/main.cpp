@@ -60,7 +60,8 @@ void test_parser() {
     )"};
     Lexer lexer{input};
     for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
-        std::println("{}[{}:{}]", magic_enum::enum_name(t.v), t.span.start, t.span.end);
+        std::println("{}[{}:{}] `{}`", magic_enum::enum_name(t.v), t.span.start, t.span.end,
+                     escape_chars(input.substr(t.span.start, t.span.end - t.span.start)));
     }
     auto node = Parser::parse(input);
     print_node(node);
@@ -69,16 +70,17 @@ void test_parser() {
 
 void test_eval() {
     std::string_view input{R"(
-    // A = 1.3
-    B := A := 1.3 + 7.3 - 7.4
-    A += B * 3
-    A * 2
+    A := [1 + 6, 2 - (4 * 1);
+            -31,        4.73]
+    B := [1, 2]
+    C := [3; 4]
+    B * C
     )"};
     eval::Scope scope{};
     auto output = eval::eval_string(input, std::move(scope));
     std::println("done!");
     if (output) {
-        std::println("output get double: {}", output.value());
+        std::println("output: {}", output.value());
     }
     // dbg(output);
 }
@@ -86,5 +88,5 @@ void test_eval() {
 int main() {
     // test_lexer();
     test_parser();
-    // test_eval();
+    test_eval();
 }
