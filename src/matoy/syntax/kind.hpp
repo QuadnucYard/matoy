@@ -10,6 +10,9 @@ enum class SyntaxKind : int8_t {
     CodeBlock,
     Parenthesized,
 
+    Matrix,
+    MatrixRow,
+
     Unary,
     Binary,
     FieldAccess,

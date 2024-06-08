@@ -62,4 +62,8 @@ inline bool is_keyword(Token) {
     return false;
 }
 
+inline bool is_terminator(Token token) {
+    return utils::is_in(token, Token::End, Token::Semicolon, Token::RBrace, Token::RParen, Token::RBracket);
+}
+
 } // namespace matoy::syntax

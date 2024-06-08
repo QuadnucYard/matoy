@@ -91,6 +91,10 @@ struct Parser::Impl {
             break;
         case Token::LParen:
             expr_with_paren(p, atomic);
+            break;
+        case Token::LBracket:
+            matrix(p);
+            break;
         case Token::Int:
         case Token::Float:
             p.eat();
@@ -114,8 +118,57 @@ struct Parser::Impl {
         auto m = p.marker();
         p.assert(Token::LParen);
         code_expr(p);
-        p.expect_closing_delimiter(m, Token::RBrace);
+        p.expect_closing_delimiter(m, Token::RParen);
         p.reduce(m, SyntaxKind::Parenthesized);
+    }
+
+    /**
+     * @brief Parse a matrix: `[1, 2; 3, 4]`
+     */
+    static auto matrix(Parser& p) -> void {
+        auto m = p.marker();
+        auto m1 = p.marker();
+
+        p.assert(Token::LBracket);
+
+        size_t rows{}, cols{}, cur_col{};
+
+        while (!p.at(Token::RBracket)) {
+            code_expr(p);
+            switch (p.current) {
+            case Token::Comma:
+                p.eat();
+                cur_col++;
+                if (rows == 0) {
+                    cols++;
+                }
+                break;
+            case Token::Semicolon:
+                p.eat();
+                cur_col++;
+                if (rows++ == 0) {
+                    cols = cur_col;
+                } else if (cur_col != cols) {
+                    // check shape
+                    p.expected("the same column size");
+                }
+                // finishes a row
+                p.reduce(m1, SyntaxKind::MatrixRow);
+                m1 = p.marker();
+                cur_col = 0;
+                break;
+            case Token::RBracket:
+                rows++;
+                p.reduce(m1, SyntaxKind::MatrixRow);
+                m1 = p.marker();
+                break;
+            default:
+                p.unexpected();
+                break;
+            }
+        }
+        p.expect_closing_delimiter(m, Token::RBracket);
+        p.reduce(m, SyntaxKind::Matrix);
     }
 };
 

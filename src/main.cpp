@@ -54,14 +54,16 @@ void print_node(const SyntaxNode& node, int depth = 0) {
 }
 
 void test_parser() {
-    // std::string_view input{"A = -3.876+ Aa - (bb * af / 13 + 5.765) "};
     std::string_view input{R"(
-    A = 1.3
-    A + 4
+    A := [1 + 6, 2 - (4 * 1);
+            -31,        4.73]
     )"};
+    Lexer lexer{input};
+    for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
+        std::println("{}[{}:{}]", magic_enum::enum_name(t.v), t.span.start, t.span.end);
+    }
     auto node = Parser::parse(input);
     print_node(node);
-    // dbg(node);
     return;
 }
 
@@ -83,6 +85,6 @@ void test_eval() {
 
 int main() {
     // test_lexer();
-    // test_parser();
-    test_eval();
+    test_parser();
+    // test_eval();
 }

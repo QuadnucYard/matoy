@@ -124,6 +124,8 @@ class Parser {
 
     void expected(std::string_view) {}
 
+    void unexpected() {}
+
     void expect_closing_delimiter(Marker, Token token) {
         if (!eat_if(token)) {
             // self.nodes[open.0].convert_to_error("unclosed delimiter");
