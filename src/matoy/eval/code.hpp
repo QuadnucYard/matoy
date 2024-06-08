@@ -19,6 +19,8 @@ auto apply_binary(const syntax::ast::Binary& binary, Vm& vm,
 auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
                       auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value>;
 
+auto decl_assign(const syntax::ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value>;
+
 template <>
 inline auto eval(const syntax::ast::Ident& self, Vm& vm) -> diag::SourceResult<Value> {
     return *vm.scopes.get(self.get()).value();
@@ -85,6 +87,8 @@ inline auto eval(const syntax::ast::Binary& self, Vm& vm) -> diag::SourceResult<
         throw "unimplemented!";
     case syntax::BinOp::Assign:
         return apply_assignment(self, vm, +[](Value, Value b) -> ValueResult { return b; });
+    case syntax::BinOp::DeclAssign:
+        return decl_assign(self, vm);
     case syntax::BinOp::AddAssign:
         return apply_assignment(self, vm, add);
     case syntax::BinOp::SubAssign:
@@ -131,6 +135,13 @@ inline auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
     auto res = op(**loc, *rhs);
     **loc = *res;
     return *res;
+}
+
+inline auto decl_assign(const syntax::ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value> {
+    auto ident = std::get<syntax::ast::Ident>(binary.lhs());
+    auto rhs = eval(binary.rhs(), vm);
+    vm.define(ident.get(), *rhs);
+    return rhs;
 }
 
 } // namespace matoy::eval

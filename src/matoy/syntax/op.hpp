@@ -24,11 +24,12 @@ enum class BinOp {
     Gt,  // >
     Geq, // >=
 
-    Assign,    // +=
-    AddAssign, // +=
-    SubAssign, // -=
-    MulAssign, // *=
-    DivAssign, // /=
+    Assign,     // =
+    DeclAssign, // :=
+    AddAssign,  // +=
+    SubAssign,  // -=
+    MulAssign,  // *=
+    DivAssign,  // /=
 };
 
 inline auto unop_from_token(Token token) -> std::optional<UnOp> {
@@ -74,6 +75,8 @@ inline auto binop_from_token(Token token) -> std::optional<BinOp> {
         return BinOp::Gt;
     case Token::GtEq:
         return BinOp::Geq;
+    case Token::ColonEq:
+        return BinOp::DeclAssign;
     default:
         return std::nullopt;
     }
@@ -103,6 +106,7 @@ inline auto precedence(BinOp op) -> int {
     case BinOp::Geq:
         return 4;
     case BinOp::Assign:
+    case BinOp::DeclAssign:
     case BinOp::AddAssign:
     case BinOp::SubAssign:
     case BinOp::MulAssign:
@@ -125,6 +129,7 @@ inline auto assoc(BinOp op) -> Assoc {
     case BinOp::Geq:
         return Assoc::Left;
     case BinOp::Assign:
+    case BinOp::DeclAssign:
     case BinOp::AddAssign:
     case BinOp::SubAssign:
     case BinOp::MulAssign:

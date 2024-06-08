@@ -19,12 +19,24 @@ class Scanner {
         return str_.substr(start, end - start);
     }
 
-    std::optional<char> eat() {
+    std::optional<char> peek() const {
         if (cursor_ == str_.length()) {
             return std::nullopt;
         } else {
-            return str_[cursor_++];
+            return str_[cursor_];
         }
+    }
+
+    bool at(std::predicate<char> auto pat) const {
+        return cursor_ < str_.length() && pat(str_[cursor_]);
+    }
+
+    std::optional<char> eat() {
+        auto peeked = this->peek();
+        if (peeked) {
+            this->cursor_++;
+        }
+        return peeked;
     }
 
     bool eat_if(char c) {

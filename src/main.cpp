@@ -68,12 +68,11 @@ void test_parser() {
 void test_eval() {
     std::string_view input{R"(
     // A = 1.3
-    A = 1.3 + 7.3 - 7.4
-    A += 7
+    B := A := 1.3 + 7.3 - 7.4
+    A += B * 3
     A * 2
     )"};
     eval::Scope scope{};
-    scope.define("A", 3.3);
     auto output = eval::eval_string(input, std::move(scope));
     std::println("done!");
     if (output) {

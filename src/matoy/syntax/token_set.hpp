@@ -44,7 +44,8 @@ namespace sets {
 inline constexpr TokenSet stmt{};
 
 /// Syntax kinds that can start an atomic code primary.
-inline constexpr TokenSet atomic_primary{Token::Ident, Token::LBrace, Token::RBrace, Token::Int, Token::Float};
+inline constexpr TokenSet atomic_primary{Token::Ident, Token::LBrace, Token::RBrace, Token::Int,
+                                         Token::Float, Token::Bool,   Token::Str};
 
 /// Syntax kinds that can start a code primary.
 inline constexpr TokenSet primary{atomic_primary};
@@ -53,9 +54,10 @@ inline constexpr TokenSet primary{atomic_primary};
 inline constexpr TokenSet unary_op{Token::Plus, Token::Minus};
 
 /// Syntax kinds that are binary operators.
-inline constexpr TokenSet binary_op{Token::Plus,    Token::Minus,  Token::Star,    Token::Slash,  Token::PlusEq,
-                                    Token::MinusEq, Token::StarEq, Token::SlashEq, Token::ExclEq, Token::Eq,
-                                    Token::EqEq,    Token::Lt,     Token::LtEq,    Token::Gt,     Token::GtEq};
+inline constexpr TokenSet binary_op{Token::Plus,   Token::Minus,   Token::Star,   Token::Slash,
+                                    Token::PlusEq, Token::MinusEq, Token::StarEq, Token::SlashEq,
+                                    Token::ExclEq, Token::Eq,      Token::EqEq,   Token::Lt,
+                                    Token::LtEq,   Token::Gt,      Token::GtEq,   Token::ColonEq};
 
 /// Syntax kinds that can start an atomic code expression.
 inline constexpr TokenSet atomic_expr{atomic_primary};

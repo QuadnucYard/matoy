@@ -34,6 +34,7 @@ enum class Token : int8_t {
     LtEq,    // <=
     Gt,      //  >
     GtEq,    // >=
+    ColonEq, // :=
 
     LParen,   // (
     RParen,   // )
@@ -45,6 +46,8 @@ enum class Token : int8_t {
     Ident,
     Int,
     Float,
+    Bool,
+    Str,
 };
 
 inline bool is_trivia(Token token) {

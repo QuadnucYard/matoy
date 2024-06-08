@@ -21,7 +21,7 @@ class Scope {
     using value_pointer = value_type*;
     using value_const_pointer = const value_type*;
 
-    auto define(std::convertible_to<key_type> auto name, std::convertible_to<value_type> auto value) -> void {
+    auto define(std::constructible_from<key_type> auto name, std::constructible_from<value_type> auto value) -> void {
         values.emplace(std::move(name), std::move(value));
     }
 
@@ -48,15 +48,15 @@ struct Scopes {
 
     Scopes() : scopes{{}} {}
 
-    auto top() {
+    auto top() -> Scope& {
         return scopes.back();
     }
 
-    auto enter() {
+    auto enter() -> void {
         scopes.push_back({});
     }
 
-    auto exit() {
+    auto exit() -> void {
         scopes.pop_back();
     }
 

@@ -82,18 +82,13 @@ Token Lexer::block_comment() {
 
 Token Lexer::code(size_t start, char c) {
     switch (c) {
-    // case '0':
-    // case '1':
-    // case '2':
-    // case '3':
-    // case '4':
-    // case '5':
-    // case '6':
-    // case '7':
-    // case '8':
-    // case '9':
     case '0' ... '9':
         return this->number(start, c);
+    case '.':
+        if (this->s.at(is_digit)) {
+            return this->number(start, c);
+        }
+        return Token::Dot;
     case '+':
         if (this->s.eat_if('=')) {
             return Token::PlusEq;
@@ -134,6 +129,15 @@ Token Lexer::code(size_t start, char c) {
             return Token::GtEq;
         }
         return Token::Gt;
+    case ':':
+        if (this->s.eat_if('=')) {
+            return Token::ColonEq;
+        }
+        return Token::Colon;
+    case ',':
+        return Token::Comma;
+    case ';':
+        return Token::Semicolon;
     case '(':
         return Token::LParen;
     case ')':
