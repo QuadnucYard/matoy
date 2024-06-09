@@ -27,7 +27,6 @@ inline auto mul(Value lhs, Value rhs) -> ValueResult {
 }
 
 inline auto div(Value lhs, Value rhs) -> ValueResult {
-    using foundations::Matrix;
     return std::visit(
         [](auto& a, auto& b) -> ValueResult {
             using Tb = std::decay_t<decltype(b)>;

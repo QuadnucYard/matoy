@@ -14,33 +14,32 @@ namespace matoy::eval {
 template <typename T>
 auto eval(const T& self, Vm& vm) -> diag::SourceResult<Value> = delete;
 
-template <> auto eval(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
+template <> auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
 
-auto apply_binary(const syntax::ast::Binary& binary, Vm& vm,
-                  auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value>;
+auto apply_binary(const ast::Binary& binary, Vm& vm, auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value>;
 
-auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
+auto apply_assignment(const ast::Binary& binary, Vm& vm,
                       auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value>;
 
-auto decl_assign(const syntax::ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value>;
+auto decl_assign(const ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value>;
 
 template <>
-inline auto eval(const syntax::ast::Ident& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Ident& self, Vm& vm) -> diag::SourceResult<Value> {
     return *vm.scopes.get(self.get()).value();
 }
 
 template <>
-inline auto eval(const syntax::ast::Int& self, Vm&) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Int& self, Vm&) -> diag::SourceResult<Value> {
     return self.get();
 }
 
 template <>
-inline auto eval(const syntax::ast::Float& self, Vm&) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Float& self, Vm&) -> diag::SourceResult<Value> {
     return self.get();
 }
 
 template <>
-inline auto eval(const syntax::ast::Matrix& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Matrix& self, Vm& vm) -> diag::SourceResult<Value> {
     auto [rows, cols] = self.shape();
     std::vector<double> elems;
     for (auto& item : self.items()) {
@@ -55,16 +54,16 @@ inline auto eval(const syntax::ast::Matrix& self, Vm& vm) -> diag::SourceResult<
             throw "todo!";
         }
     }
-    return foundations::Matrix(rows, cols, elems);
+    return Matrix(rows, cols, elems);
 }
 
 template <>
-inline auto eval(const syntax::ast::Parenthesized& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Parenthesized& self, Vm& vm) -> diag::SourceResult<Value> {
     return eval(self.expr(), vm);
 }
 
 template <>
-inline auto eval(const syntax::ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
     Value output;
     for (auto&& expr : self.exprs()) {
         auto res = eval(expr, vm);
@@ -76,7 +75,7 @@ inline auto eval(const syntax::ast::CodeBlock& self, Vm& vm) -> diag::SourceResu
 }
 
 template <>
-inline auto eval(const syntax::ast::Unary& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Unary& self, Vm& vm) -> diag::SourceResult<Value> {
     auto value = eval(self.expr(), vm);
     if (!value)
         return value;
@@ -90,7 +89,7 @@ inline auto eval(const syntax::ast::Unary& self, Vm& vm) -> diag::SourceResult<V
 }
 
 template <>
-inline auto eval(const syntax::ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
     switch (self.op()) {
     case syntax::BinOp::Add:
         return apply_binary(self, vm, add);
@@ -123,23 +122,23 @@ inline auto eval(const syntax::ast::Binary& self, Vm& vm) -> diag::SourceResult<
 }
 
 template <>
-inline auto eval(const syntax::ast::FieldAccess& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::FieldAccess& self, Vm& vm) -> diag::SourceResult<Value> {
     auto value = eval(self.target(), vm);
     auto field = self.field();
-    return *foundations::get_field(*value, field.get());
+    return *get_field(*value, field.get());
 }
 
 template <>
-inline auto eval(const syntax::ast::FuncCall& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::FuncCall& self, Vm& vm) -> diag::SourceResult<Value> {
     return {};
 }
 
 template <>
-inline auto eval(const syntax::ast::Expr& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value> {
     return self.visit([&vm](auto& e) -> diag::SourceResult<Value> { return eval(e, vm); });
 }
 
-inline auto apply_binary(const syntax::ast::Binary& binary, Vm& vm,
+inline auto apply_binary(const ast::Binary& binary, Vm& vm,
                          auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value> {
     auto lhs = eval(binary.lhs(), vm);
     if (!lhs)
@@ -151,7 +150,7 @@ inline auto apply_binary(const syntax::ast::Binary& binary, Vm& vm,
     return op(*lhs, *rhs).value();
 }
 
-inline auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
+inline auto apply_assignment(const ast::Binary& binary, Vm& vm,
                              auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value> {
     auto rhs = eval(binary.rhs(), vm);
     auto loc = access(binary.lhs(), vm);
@@ -160,8 +159,8 @@ inline auto apply_assignment(const syntax::ast::Binary& binary, Vm& vm,
     return *res;
 }
 
-inline auto decl_assign(const syntax::ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value> {
-    auto ident = std::get<syntax::ast::Ident>(binary.lhs());
+inline auto decl_assign(const ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value> {
+    auto ident = std::get<ast::Ident>(binary.lhs());
     auto rhs = eval(binary.rhs(), vm);
     vm.define(ident.get(), Value{*rhs});
     return rhs;

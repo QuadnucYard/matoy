@@ -16,7 +16,7 @@ namespace matoy::eval {
 class Scope {
   public:
     using key_type = std::string;
-    using value_type = foundations::Value;
+    using value_type = Value;
     using storage_type = std::unordered_map<std::string, value_type, utils::transparent_string_hash, std::equal_to<>>;
     using value_pointer = value_type*;
     using value_const_pointer = const value_type*;

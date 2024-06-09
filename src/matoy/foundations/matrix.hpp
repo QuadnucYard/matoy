@@ -198,13 +198,17 @@ class Matrix {
 
 } // namespace matoy::foundations
 
+namespace matoy {
+using foundations::Matrix;
+}
+
 #ifdef assert
 #undef assert
 #endif
 
 template <>
-struct std::formatter<matoy::foundations::Matrix> : std::formatter<char> {
-    auto format(const matoy::foundations::Matrix& mat, format_context& ctx) const {
+struct std::formatter<matoy::Matrix> : std::formatter<char> {
+    auto format(const matoy::Matrix& mat, format_context& ctx) const {
         std::format_to(ctx.out(), "[");
         for (size_t i = 0; i < mat.rows; i++) {
             if (i != 0) {

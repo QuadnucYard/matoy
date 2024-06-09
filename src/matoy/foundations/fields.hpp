@@ -22,3 +22,7 @@ inline auto get_field(const Value& self, std::string_view field) -> diag::StrRes
 }
 
 } // namespace matoy::foundations
+
+namespace matoy {
+using foundations::get_field;
+}
