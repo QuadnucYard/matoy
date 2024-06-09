@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fwd.hpp"
+#include "matoy/diag.hpp"
 #include "matoy/eval/vm.hpp"
 #include "matoy/syntax/ast.hpp"
 
@@ -17,7 +18,7 @@ template <> auto access(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Val
 
 template <>
 inline auto access(const ast::Ident& self, Vm& vm) -> diag::SourceResult<Value*> {
-    return vm.scopes.get_mut(self.get()).value();
+    return diag::to_source_error(vm.scopes.get_mut(self.get()), self.span());
 }
 
 template <>
@@ -26,22 +27,22 @@ inline auto access(const ast::Parenthesized& self, Vm& vm) -> diag::SourceResult
 }
 
 template <>
-inline auto access(const ast::FieldAccess& self, Vm& vm) -> diag::SourceResult<Value*> {
+inline auto access(const ast::FieldAccess&, Vm&) -> diag::SourceResult<Value*> {
     throw "unimplemented!";
 }
 
 template <>
-inline auto access(const ast::FuncCall& self, Vm& vm) -> diag::SourceResult<Value*> {
+inline auto access(const ast::FuncCall&, Vm&) -> diag::SourceResult<Value*> {
     throw "unimplemented!";
 }
 
 template <>
 inline auto access(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value*> {
-    return self.visit([&vm](const auto& v) -> diag::SourceResult<Value*> {
+    return self.visit([&vm, &self](const auto& v) -> diag::SourceResult<Value*> {
         if constexpr (requires { access(v, vm); }) {
             return access(v, vm);
         } else {
-            return std::unexpected{std::vector<diag::SourceDiagnostic>{}};
+            return diag::source_error(syntax::get_span(self), "cannot mutate a temporary value");
         }
     });
 }

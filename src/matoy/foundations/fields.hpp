@@ -4,6 +4,7 @@
 #include "matoy/foundations/matrix.hpp"
 #include "matoy/utils/match.hpp"
 #include "value.hpp"
+#include <format>
 #include <string_view>
 
 namespace matoy::foundations {
@@ -14,10 +15,10 @@ inline auto get_field(const Value& self, std::string_view field) -> diag::StrRes
             if (field == "T") {
                 return matrix.transposed();
             } else {
-                return {};
+                return std::unexpected{std::format("type matrix does not contain field \"{}\"", field)};
             }
         },
-        [](const auto&) -> diag::StrResult<Value> { return {}; },
+        [](const auto&) -> diag::StrResult<Value> { return std::unexpected{"cannot access fields on type"}; },
     });
 }
 

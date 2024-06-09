@@ -11,14 +11,10 @@
 namespace matoy::eval {
 
 auto eval_string(std::string_view str, Scope&& scope) -> diag::SourceResult<Value> {
-    syntax::SyntaxNode node = syntax::Parser::parse(str);
-
     Vm vm;
     vm.scopes.scopes.push_back(std::move(scope));
 
-    auto output = eval(node.cast<ast::CodeBlock>().value(), vm);
-
-    return output;
+    return eval_string(str, vm);
 }
 
 auto eval_string(std::string_view str, Vm& vm) -> diag::SourceResult<Value> {

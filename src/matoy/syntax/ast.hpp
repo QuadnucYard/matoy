@@ -13,6 +13,10 @@ namespace matoy::syntax {
 
 struct AstNode {
     const SyntaxNode& n;
+
+    auto span() const -> Span {
+        return n.span();
+    }
 };
 
 namespace ast {
@@ -231,6 +235,14 @@ inline auto from_untyped<ast::Expr>(const SyntaxNode& node) -> std::optional<ast
         }
     }
     throw "unimplemented!";
+}
+
+inline auto get_span(const AstNode& self) -> Span {
+    return self.span();
+}
+
+inline auto get_span(const ast::Expr& self) -> Span {
+    return self.visit([](auto& v) { return v.span(); });
 }
 
 } // namespace matoy::syntax

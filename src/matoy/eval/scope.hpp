@@ -62,22 +62,16 @@ struct Scopes {
 
     auto get(std::string_view var) const -> diag::HintedResult<Scope::value_const_pointer> {
         using namespace matoy::utils;
-        if (auto ret =
-                ranges::find_map(scopes | std::views::reverse, [var](const Scope& scope) { return scope.get(var); })) {
-            return *ret;
-        } else {
-            return std::unexpected{diag::Hints{std::format("unknown variable: {}", var)}};
-        }
+        return ok_or_else(
+            ranges::find_map(scopes | std::views::reverse, [var](const Scope& scope) { return scope.get(var); }),
+            [var]() { return diag::Hints{std::format("unknown variable: {}", var)}; });
     }
 
     auto get_mut(std::string_view var) -> diag::HintedResult<Scope::value_pointer> {
         using namespace matoy::utils;
-        if (auto ret =
-                ranges::find_map(scopes | std::views::reverse, [var](Scope& scope) { return scope.get_mut(var); })) {
-            return *ret;
-        } else {
-            return std::unexpected{diag::Hints{std::format("unknown variable: {}", var)}};
-        }
+        return ok_or_else(
+            ranges::find_map(scopes | std::views::reverse, [var](Scope& scope) { return scope.get_mut(var); }),
+            [var]() { return diag::Hints{std::format("unknown variable: {}", var)}; });
     }
 };
 

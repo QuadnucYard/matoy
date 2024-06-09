@@ -82,7 +82,7 @@ inline auto get_name(Token self) -> std::string_view {
     case Token::PlusEq:       return "add-assign operator";
     case Token::Minus:        return "minus";
     case Token::MinusEq:      return "subtract-assign operator";
-    case Token::Star:         return "slash";
+    case Token::Star:         return "star";
     case Token::StarEq:       return "multiply-assign operator";
     case Token::Slash:        return "slash";
     case Token::SlashEq:      return "divide-assign operator";

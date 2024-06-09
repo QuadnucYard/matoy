@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fwd.hpp"
+#include "matoy/diag.hpp"
 #include "matoy/foundations/matrix.hpp"
 #include <variant>
 
@@ -31,7 +32,7 @@ inline auto div(Value lhs, Value rhs) -> ValueResult {
         [](auto& a, auto& b) -> ValueResult {
             using Tb = std::decay_t<decltype(b)>;
             if constexpr (std::is_same_v<Tb, Matrix>) {
-                return {};
+                return diag::hint_error("matrix can't divide a scala");
             } else {
                 return a / b;
             }
