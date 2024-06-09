@@ -7,7 +7,10 @@
 namespace matoy::eval {
 
 class Scope;
+class Vm;
 
 auto eval_string(std::string_view str, Scope&& scope) -> diag::SourceResult<Value>;
+
+auto eval_string(std::string_view str, Vm& vm) -> diag::SourceResult<Value>;
 
 } // namespace matoy::eval

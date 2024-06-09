@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <format>
 
 namespace matoy::syntax {
 
@@ -16,3 +17,10 @@ struct Spanned {
 };
 
 } // namespace matoy::syntax
+
+template <>
+struct std::formatter<matoy::syntax::Span> : std::formatter<char> {
+    auto format(const matoy::syntax::Span& span, format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}:{}", span.start, span.end);
+    }
+};

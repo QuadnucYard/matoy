@@ -67,3 +67,17 @@ inline bool is_terminator(Token token) {
 }
 
 } // namespace matoy::syntax
+
+#ifdef PRETTY
+
+#include <format>
+#include <magic_enum.hpp>
+
+template <>
+struct std::formatter<matoy::syntax::Token> : std::formatter<char> {
+    auto format(const matoy::syntax::Token& token, format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}", magic_enum::enum_name(token));
+    }
+};
+
+#endif

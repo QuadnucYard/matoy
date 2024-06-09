@@ -108,7 +108,7 @@ struct Parser::Impl {
     static auto code_block(Parser& p) -> void {
         constexpr TokenSet end{Token::RBrace, Token::RBracket, Token::RParen};
         auto m = p.marker();
-        p.assert(Token::LBrace);
+        p.assert_cur(Token::LBrace);
         code(p, [end](Parser& p) { return p.at(end); });
         p.expect_closing_delimiter(m, Token::RBrace);
         p.reduce(m, SyntaxKind::CodeBlock);
@@ -116,7 +116,7 @@ struct Parser::Impl {
 
     static auto expr_with_paren(Parser& p, bool) -> void {
         auto m = p.marker();
-        p.assert(Token::LParen);
+        p.assert_cur(Token::LParen);
         code_expr(p);
         p.expect_closing_delimiter(m, Token::RParen);
         p.reduce(m, SyntaxKind::Parenthesized);
@@ -129,7 +129,7 @@ struct Parser::Impl {
         auto m = p.marker();
         auto m1 = p.marker();
 
-        p.assert(Token::LBracket);
+        p.assert_cur(Token::LBracket);
 
         size_t rows{}, cols{}, cur_col{};
 

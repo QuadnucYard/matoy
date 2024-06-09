@@ -4,7 +4,8 @@
 
 namespace matoy::eval {
 
-struct Vm {
+class Vm {
+  public:
     Scopes scopes;
 
     Vm() = default;

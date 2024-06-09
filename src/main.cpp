@@ -1,15 +1,16 @@
+#include "matoy/console/console.hpp"
 #include "matoy/eval/eval.hpp"
 #include "matoy/eval/scope.hpp"
 #include "matoy/syntax/lexer.hpp"
 #include "matoy/syntax/parser.hpp"
 #include "matoy/utils/match.hpp"
 #include <iomanip>
-#include <magic_enum.hpp>
 #include <print>
 #include <sstream>
 #include <string_view>
 
 using namespace matoy;
+using namespace matoy::console;
 using namespace matoy::syntax;
 using namespace matoy::utils;
 
@@ -19,32 +20,10 @@ std::string escape_chars(std::string_view str) {
     return s.str();
 }
 
-template <>
-struct std::formatter<Token> : std::formatter<char> {
-    auto format(const Token& token, format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}", magic_enum::enum_name(token));
-    }
-};
-
-template <>
-struct std::formatter<SyntaxKind> : std::formatter<char> {
-    auto format(const SyntaxKind& kind, format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}", magic_enum::enum_name(kind));
-    }
-};
-
-template <>
-struct std::formatter<Span> : std::formatter<char> {
-    auto format(const Span& span, format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}:{}", span.start, span.end);
-    }
-};
-
 void print_tokens(std::string_view input) {
     Lexer lexer{input};
     for (auto t = lexer.next(); t.v != Token::End; t = lexer.next()) {
-        std::println("{}[{}] `{}`", magic_enum::enum_name(t.v), t.span,
-                     escape_chars(input.substr(t.span.start, t.span.end - t.span.start)));
+        std::println("{}[{}] `{}`", t.v, t.span, escape_chars(input.substr(t.span.start, t.span.end - t.span.start)));
     }
 }
 
@@ -102,5 +81,8 @@ void test_eval() {
 }
 
 int main() {
-    test_eval();
+    // test_eval();
+    Console console;
+    console.start();
+    console.loop();
 }

@@ -65,7 +65,7 @@ class Parser {
         return false;
     }
 
-    void assert(Token token) {
+    void assert_cur(Token token) {
         if (current != token) {
             std::abort();
         }

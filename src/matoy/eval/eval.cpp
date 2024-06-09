@@ -15,7 +15,15 @@ auto eval_string(std::string_view str, Scope&& scope) -> diag::SourceResult<Valu
     Vm vm;
     vm.scopes.scopes.push_back(std::move(scope));
 
-    auto output = eval(node.cast<syntax::ast::CodeBlock>().value(), vm);
+    auto output = eval(node.cast<ast::CodeBlock>().value(), vm);
+
+    return output;
+}
+
+auto eval_string(std::string_view str, Vm& vm) -> diag::SourceResult<Value> {
+    syntax::SyntaxNode node = syntax::Parser::parse(str);
+
+    auto output = eval(node.cast<ast::CodeBlock>().value(), vm);
 
     return output;
 }
