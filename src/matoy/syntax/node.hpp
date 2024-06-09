@@ -1,11 +1,14 @@
 #pragma once
 
 #include "kind.hpp"
+#include "matoy/diag.hpp"
 #include "matoy/utils/ranges.hpp"
 #include "span.hpp"
 #include "token.hpp"
+#include <concepts>
 #include <optional>
 #include <ranges>
+#include <string>
 #include <string_view>
 #include <variant>
 #include <vector>
@@ -26,28 +29,66 @@ struct LeafNode {
 
 struct InnerNode {
     SyntaxKind kind;
-    size_t len{};
+    std::string_view text;
     Span span{};
     size_t descendants{};
+    bool erroneous{};
     std::vector<SyntaxNode> children;
 
-    InnerNode(SyntaxKind kind, std::vector<SyntaxNode> children);
+    InnerNode(SyntaxKind kind, std::string_view text, std::vector<SyntaxNode> children);
+
+    InnerNode(InnerNode&&) = default;
+    InnerNode& operator=(InnerNode&&) = default;
+
+    size_t len() const {
+        return text.length();
+    }
+
+  private:
+    InnerNode(const InnerNode&) = default;
+    InnerNode& operator=(const InnerNode&) = default;
+};
+
+struct ErrorNode {
+    std::string text;
+    diag::SyntaxError error;
+
+    ErrorNode(std::string text, std::string message, Span span)
+        : text{std::move(text)}, error{.span = span, .message = std::move(message)} {}
+
+    size_t len() const {
+        return text.length();
+    }
+
+    void hint(std::string message) {
+        error.hints.push_back(std::move(message));
+    }
 };
 
 template <typename T>
 auto from_untyped(const SyntaxNode& node) -> std::optional<T> = delete;
 
 struct SyntaxNode {
-    std::variant<LeafNode, InnerNode> v;
+    std::variant<LeafNode, InnerNode, ErrorNode> v;
 
     // Create a new leaf node.
-    static SyntaxNode leaf(Token token, std::string_view text, Span span = {}) {
+    static SyntaxNode leaf(Token token, std::string_view text, Span span) {
         return {LeafNode{token, text, span}};
     }
 
     // Create a new inner node with children.
-    static SyntaxNode inner(SyntaxKind kind, std::vector<SyntaxNode> children) {
-        return {InnerNode{kind, std::move(children)}};
+    static SyntaxNode inner(SyntaxKind kind, std::string_view text, std::vector<SyntaxNode> children) {
+        return {InnerNode{kind, text, std::move(children)}};
+    }
+
+    // Create a new error node.
+    static SyntaxNode error(auto&& text, auto&& message, Span span)
+        requires requires {
+            std::constructible_from<std::string, decltype(text)>;
+            std::constructible_from<std::string, decltype(message)>;
+        }
+    {
+        return {ErrorNode{std::string{std::move(text)}, std::string{std::move(message)}, span}};
     }
 
     bool is_leaf() const {
@@ -58,12 +99,20 @@ struct SyntaxNode {
         return std::holds_alternative<InnerNode>(v);
     }
 
+    bool is_error() const {
+        return std::holds_alternative<ErrorNode>(v);
+    }
+
     const LeafNode* as_leaf() const {
         return std::get_if<LeafNode>(&v);
     }
 
     const InnerNode* as_inner() const {
         return std::get_if<InnerNode>(&v);
+    }
+
+    const ErrorNode* as_error() const {
+        return std::get_if<ErrorNode>(&v);
     }
 
     Span span() const;
@@ -76,10 +125,47 @@ struct SyntaxNode {
 
     SyntaxKind kind() const;
 
+    bool erroneous() const;
+
+    bool stores_error() const;
+
+    bool empty() const {
+        return len() == 0;
+    }
+
+    std::string_view text() const;
+
+    // std::string extract_text();
+
+    std::vector<diag::SyntaxError> errors() const;
+
+    /// Convert the child to another kind.
+    void convert_to_kind(SyntaxKind kind);
+
+    /// Convert the child to an error, if it isn't already one.
+    void convert_to_error(auto&& message) {
+        if (!stores_error()) {
+            v = ErrorNode{std::string{text()}, std::string{std::move(message)}, span()};
+        }
+    }
+
+    /// Convert the child to an error stating that the given thing was
+    /// expected, but the current kind was found.
+    void expected_token(std::string_view expected) {
+        auto token = this->token();
+        convert_to_error(std::format("expected {}, found {}", expected, get_name(token)));
+        // TODO check is_keyword
+    }
+
+    void unexpected() {
+        auto token = this->token();
+        convert_to_error(std::format("unexpected {}", get_name(token)));
+    }
+
     /// Whether the node can be cast to the given AST node.
     template <typename T>
     bool is() const {
-        return false;
+        return cast<T>().has_value();
     }
 
     /// Try to convert the node to a typed AST node.

@@ -15,18 +15,31 @@ void Console::loop() {
     eval::Vm vm;
 
     while (true) {
-        auto str = input();
-        auto out = eval::eval_string(str, vm);
+        const auto str = input();
+        const auto out = eval::eval_string(str, vm);
         if (out) {
             std::println("{}", *out);
         } else {
-            std::println("evaluation error!");
+            for (auto& e : out.error()) {
+                std::println("\033[1;31m"
+                             "error: "
+                             "\033[33m"
+                             "source:{}: "
+                             "\033[0m"
+                             "{}",
+                             e.span, e.message);
+                for (auto& h : e.hints) {
+                    std::println("  hint: {}", h);
+                }
+            }
         }
     }
 }
 
 std::string Console::input() {
-    std::print(">>> ");
+    std::print("\033[36m"
+               ">>> "
+               "\033[0m");
     std::string str;
     std::getline(std::cin, str);
     // TODO judge whether the input is ended

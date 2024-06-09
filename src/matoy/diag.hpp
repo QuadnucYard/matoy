@@ -1,5 +1,6 @@
 #pragma once
 
+#include "matoy/syntax/span.hpp"
 #include <concepts>
 #include <expected>
 #include <string>
@@ -19,9 +20,30 @@ struct Hints {
 template <typename T>
 using HintedResult = std::expected<T, Hints>;
 
-struct SourceDiagnostic {};
+enum Severity { Error, Warning };
+
+struct SourceDiagnostic {
+    Severity severity;
+    syntax::Span span;
+    std::string message;
+    std::vector<std::string> hints;
+};
 
 template <typename T>
 using SourceResult = std::expected<T, std::vector<SourceDiagnostic>>;
+
+struct SyntaxError {
+    syntax::Span span{};
+    std::string message{};
+    std::vector<std::string> hints{};
+
+    // operator SourceDiagnostic() const& {
+    //     return SourceDiagnostic{Severity::Error, span, message, hints};
+    // }
+
+    operator SourceDiagnostic() const&& {
+        return SourceDiagnostic{Severity::Error, span, std::move(message), std::move(hints)};
+    }
+};
 
 } // namespace matoy::diag

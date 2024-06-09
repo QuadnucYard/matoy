@@ -212,36 +212,22 @@ template <>
 inline auto from_untyped<ast::Expr>(const SyntaxNode& node) -> std::optional<ast::Expr> {
     if (auto leaf = node.as_leaf()) {
         switch (leaf->token) {
-        case Token::Ident:
-            return ast::Ident{node};
-        case Token::Int:
-            return ast::Int{node};
-        case Token::Float:
-            return ast::Float{node};
-        default:
-            return std::nullopt;
+        case Token::Ident: return ast::Ident{node};
+        case Token::Int:   return ast::Int{node};
+        case Token::Float: return ast::Float{node};
+        default:           return std::nullopt;
         }
     }
     if (auto inner = node.as_inner()) {
         switch (inner->kind) {
-        case SyntaxKind::CodeBlock:
-            return ast::CodeBlock{node};
-        case SyntaxKind::Parenthesized:
-            return ast::Parenthesized{node};
-        // case SyntaxKind::MatrixRow:
-        //     return ast::MatrixRow{node};
-        case SyntaxKind::Matrix:
-            return ast::Matrix{node};
-        case SyntaxKind::Unary:
-            return ast::Unary{node};
-        case SyntaxKind::Binary:
-            return ast::Binary{node};
-        case SyntaxKind::FieldAccess:
-            return ast::FieldAccess{node};
-        case SyntaxKind::FuncCall:
-            return ast::FuncCall{node};
-        default:
-            return std::nullopt;
+        case SyntaxKind::CodeBlock:     return ast::CodeBlock{node};
+        case SyntaxKind::Parenthesized: return ast::Parenthesized{node};
+        case SyntaxKind::Matrix:        return ast::Matrix{node};
+        case SyntaxKind::Unary:         return ast::Unary{node};
+        case SyntaxKind::Binary:        return ast::Binary{node};
+        case SyntaxKind::FieldAccess:   return ast::FieldAccess{node};
+        case SyntaxKind::FuncCall:      return ast::FuncCall{node};
+        default:                        return std::nullopt;
         }
     }
     throw "unimplemented!";

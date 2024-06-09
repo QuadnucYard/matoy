@@ -1,4 +1,10 @@
 AlwaysBreakTemplateDeclarations: Leave
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCaseColons: false
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Empty
 ColumnLimit: 120
 IndentWidth: 4

@@ -13,6 +13,10 @@ namespace matoy::syntax {
 
 struct Marker {
     size_t v;
+
+    size_t operator*() const {
+        return v;
+    }
 };
 
 class Parser {
@@ -25,6 +29,10 @@ class Parser {
   private:
     size_t current_end() const {
         return lexer.cursor();
+    }
+
+    Span current_span() const {
+        return {current_start, current_end()};
     }
 
     std::string_view current_text() const {
@@ -57,6 +65,12 @@ class Parser {
         skip();
     }
 
+    SyntaxNode& eat_and_get() {
+        auto offset = nodes.size();
+        eat();
+        return nodes[offset];
+    }
+
     bool eat_if(Token token) {
         if (at(token)) {
             eat();
@@ -87,6 +101,11 @@ class Parser {
         return {i};
     }
 
+    bool after_error() const {
+        auto m = before_trivia();
+        return *m > 0 && nodes[*m - 1].stores_error();
+    }
+
     void reduce(Marker from, SyntaxKind kind) {
         reduce_within(from, before_trivia(), kind);
     }
@@ -108,29 +127,23 @@ class Parser {
 
     void lex();
 
-    bool expect(Token token) {
-        if (this->at(token)) {
-            eat();
-            return true;
-        } else if (token == Token::Ident && is_keyword(token)) {
-            // self.trim_errors();
-            // self.eat_and_get().expected(kind.name());
-        } else {
-            // self.balanced &= !kind.is_grouping();
-            // self.expected(kind.name());
-        }
-        return false;
-    }
+    /// Consume the given token or produce an error.
+    bool expect(Token token);
 
-    void expected(std::string_view) {}
+    /// Produce an error that the given `thing` was expected.
+    void expected(std::string_view thing);
 
-    void unexpected() {}
+    /// Produce an error that the given `thing` was expected at the position of the marker `m`.
+    void expected_at(Marker m, std::string_view thing);
 
-    void expect_closing_delimiter(Marker, Token token) {
-        if (!eat_if(token)) {
-            // self.nodes[open.0].convert_to_error("unclosed delimiter");
-        }
-    }
+    /// Consume the next token (if any) and produce an error stating that it was unexpected.
+    void unexpected();
+
+    /// Consume the given closing delimiter or produce an error for the matching opening delimiter at `open`.
+    void expect_closing_delimiter(Marker open, Token token);
+
+    // Remove trailing errors with zero length.
+    void trim_errors();
 
   private:
     struct Impl;

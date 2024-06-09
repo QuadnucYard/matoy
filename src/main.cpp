@@ -33,12 +33,13 @@ void print_node(const SyntaxNode& node, int depth = 0) {
             std::println("{:>{}}{} `{}` [{}]", "", depth * 2, leaf.token, leaf.text, leaf.span);
         },
         [depth](const InnerNode& inner) {
-            std::println("{:>{}}{} [{}] (len: {}, desc: {})", "", depth * 2, inner.kind, inner.span, inner.len,
+            std::println("{:>{}}{} [{}] (len: {}, desc: {})", "", depth * 2, inner.kind, inner.span, inner.len(),
                          inner.descendants);
             for (auto& child : inner.children) {
                 print_node(child, depth + 1);
             }
         },
+        [depth](const ErrorNode& error) { std::println("{:>{}}ERROR `{}`", "", depth * 2, error.text); },
     });
 }
 

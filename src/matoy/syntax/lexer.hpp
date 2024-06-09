@@ -28,24 +28,14 @@ class Lexer {
     Token next_token();
 
   private:
-    Token whitespace();
-
-    Token line_comment();
-
-    Token block_comment();
-
-    Token code(size_t start, char c);
-
-    Token ident(size_t start);
-
-    Token number(size_t start, char c);
-
     Token error(std::string message);
 
   private:
     Scanner s;
 
     std::optional<std::string> err;
+
+    struct Impl;
 };
 
 } // namespace matoy::syntax

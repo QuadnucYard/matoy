@@ -8,6 +8,10 @@ namespace matoy::syntax {
 struct Span {
     std::size_t start{};
     std::size_t end{};
+
+    Span operator|(const Span& other) const {
+        return {std::min(start, other.start), std::max(end, other.end)};
+    }
 };
 
 template <typename T>

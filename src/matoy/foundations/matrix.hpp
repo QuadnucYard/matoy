@@ -58,7 +58,7 @@ class Matrix {
     Self operator-() const {
         auto res{*this};
         for (size_t i{0}; i < data.size(); i++) {
-            res.data[i] -= res.data[i];
+            res.data[i] = -res.data[i];
         }
         return res;
     }

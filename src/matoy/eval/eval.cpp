@@ -5,6 +5,7 @@
 #include "matoy/syntax/ast.hpp"
 #include "matoy/syntax/node.hpp"
 #include "matoy/syntax/parser.hpp"
+#include <ranges>
 #include <string_view>
 
 namespace matoy::eval {
@@ -21,9 +22,16 @@ auto eval_string(std::string_view str, Scope&& scope) -> diag::SourceResult<Valu
 }
 
 auto eval_string(std::string_view str, Vm& vm) -> diag::SourceResult<Value> {
-    syntax::SyntaxNode node = syntax::Parser::parse(str);
+    syntax::SyntaxNode root = syntax::Parser::parse(str);
 
-    auto output = eval(node.cast<ast::CodeBlock>().value(), vm);
+    auto errors = root.errors();
+    if (!errors.empty()) {
+        return std::unexpected{errors | std::views::as_rvalue |
+                               std::views::transform(&diag::SyntaxError::operator diag::SourceDiagnostic) |
+                               std::ranges::to<std::vector>()};
+    }
+
+    auto output = eval(root.cast<ast::CodeBlock>().value(), vm);
 
     return output;
 }

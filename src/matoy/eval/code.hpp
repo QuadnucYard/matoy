@@ -80,44 +80,30 @@ inline auto eval(const ast::Unary& self, Vm& vm) -> diag::SourceResult<Value> {
     if (!value)
         return value;
     switch (self.op()) {
-    case syntax::UnOp::Pos:
-        return pos(*value).value();
-    case syntax::UnOp::Neg:
-        return neg(*value).value();
-        break;
+    case syntax::UnOp::Pos: return pos(*value).value();
+    case syntax::UnOp::Neg: return neg(*value).value(); break;
     }
 }
 
 template <>
 inline auto eval(const ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
     switch (self.op()) {
-    case syntax::BinOp::Add:
-        return apply_binary(self, vm, add);
-    case syntax::BinOp::Sub:
-        return apply_binary(self, vm, sub);
-    case syntax::BinOp::Mul:
-        return apply_binary(self, vm, mul);
-    case syntax::BinOp::Div:
-        return apply_binary(self, vm, div);
+    case syntax::BinOp::Add:        return apply_binary(self, vm, add);
+    case syntax::BinOp::Sub:        return apply_binary(self, vm, sub);
+    case syntax::BinOp::Mul:        return apply_binary(self, vm, mul);
+    case syntax::BinOp::Div:        return apply_binary(self, vm, div);
     case syntax::BinOp::Eq:
     case syntax::BinOp::Neq:
     case syntax::BinOp::Lt:
     case syntax::BinOp::Leq:
     case syntax::BinOp::Gt:
-    case syntax::BinOp::Geq:
-        throw "unimplemented!";
-    case syntax::BinOp::Assign:
-        return apply_assignment(self, vm, +[](Value, Value b) -> ValueResult { return b; });
-    case syntax::BinOp::DeclAssign:
-        return decl_assign(self, vm);
-    case syntax::BinOp::AddAssign:
-        return apply_assignment(self, vm, add);
-    case syntax::BinOp::SubAssign:
-        return apply_assignment(self, vm, sub);
-    case syntax::BinOp::MulAssign:
-        return apply_assignment(self, vm, mul);
-    case syntax::BinOp::DivAssign:
-        return apply_assignment(self, vm, div);
+    case syntax::BinOp::Geq:        throw "unimplemented!";
+    case syntax::BinOp::Assign:     return apply_assignment(self, vm, +[](Value, Value b) -> ValueResult { return b; });
+    case syntax::BinOp::DeclAssign: return decl_assign(self, vm);
+    case syntax::BinOp::AddAssign:  return apply_assignment(self, vm, add);
+    case syntax::BinOp::SubAssign:  return apply_assignment(self, vm, sub);
+    case syntax::BinOp::MulAssign:  return apply_assignment(self, vm, mul);
+    case syntax::BinOp::DivAssign:  return apply_assignment(self, vm, div);
     }
 }
 

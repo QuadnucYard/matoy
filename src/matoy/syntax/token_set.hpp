@@ -44,8 +44,8 @@ namespace sets {
 inline constexpr TokenSet stmt{};
 
 /// Syntax kinds that can start an atomic code primary.
-inline constexpr TokenSet atomic_primary{Token::Ident, Token::LBrace, Token::RBrace, Token::Int,
-                                         Token::Float, Token::Bool,   Token::Str};
+inline constexpr TokenSet atomic_primary{Token::Ident, Token::LBrace, Token::LBracket, Token::LParen,
+                                         Token::Int,   Token::Float,  Token::Bool,     Token::Str};
 
 /// Syntax kinds that can start a code primary.
 inline constexpr TokenSet primary{atomic_primary};
