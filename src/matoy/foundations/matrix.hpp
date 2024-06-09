@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <format>
 #include <mdspan>
 #include <ranges>
@@ -23,6 +22,10 @@ class Matrix {
         return res;
     }
 
+    auto shape() const -> std::pair<size_t, size_t> {
+        return {rows, cols};
+    }
+
     auto view() const {
         return std::mdspan(data.data(), rows, cols);
     }
@@ -31,15 +34,7 @@ class Matrix {
         return std::mdspan(data.data(), rows, cols);
     }
 
-    Self transposed() const {
-        auto res{Matrix::zeros(cols, rows)};
-        for (size_t i{0}; i < rows; i++) {
-            for (size_t j{0}; j < cols; j++) {
-                res[j, i] = (*this)[i, j];
-            }
-        }
-        return res;
-    }
+    Self transposed() const;
 
 #pragma region operators
 
@@ -51,142 +46,48 @@ class Matrix {
         return data[i * cols + j];
     }
 
-    Self operator+() const {
-        return *this;
-    }
+    Self operator+() const;
 
-    Self operator-() const {
-        auto res{*this};
-        for (size_t i{0}; i < data.size(); i++) {
-            res.data[i] = -res.data[i];
-        }
-        return res;
-    }
+    Self operator-() const;
 
-    friend Self operator+(const Self& lhs, const Self& rhs) {
-        auto res{lhs};
-        res += rhs;
-        return res;
-    }
+    friend Self operator+(const Self& lhs, const Self& rhs);
 
-    friend Self operator+(const Self& lhs, value_type rhs) {
-        auto res{lhs};
-        res += rhs;
-        return res;
-    }
+    friend Self operator+(const Self& lhs, value_type rhs);
 
-    friend Self operator+(value_type lhs, const Self& rhs) {
-        auto res{rhs};
-        res += lhs;
-        return res;
-    }
+    friend Self operator+(value_type lhs, const Self& rhs);
 
-    friend Self operator-(const Self& lhs, const Self& rhs) {
-        auto res{lhs};
-        res -= rhs;
-        return res;
-    }
+    friend Self operator-(const Self& lhs, const Self& rhs);
 
-    friend Self operator-(const Self& lhs, value_type rhs) {
-        auto res{lhs};
-        res -= rhs;
-        return res;
-    }
+    friend Self operator-(const Self& lhs, value_type rhs);
 
-    friend Self operator-(value_type lhs, const Self& rhs) {
-        auto res{rhs};
-        res -= lhs;
-        return res;
-    }
+    friend Self operator-(value_type lhs, const Self& rhs);
 
-    friend Self operator*(const Self& lhs, const Self& rhs) {
-        // TODO assert
-        auto res{Self::zeros(lhs.rows, rhs.cols)};
-        auto v{res.view()};
-        auto v1{lhs.view()};
-        auto v2{rhs.view()};
-        for (size_t i{0}; i < lhs.rows; i++) {
-            for (size_t k{0}; k < lhs.cols; k++) {
-                for (size_t j{0}; j < rhs.cols; j++) {
-                    v[i, j] += v1[i, k] * v2[k, j];
-                }
-            }
-        }
-        return res;
-    }
+    friend Self operator*(const Self& lhs, const Self& rhs);
 
-    friend Self operator*(const Self& lhs, value_type rhs) {
-        auto res{lhs};
-        res *= rhs;
-        return res;
-    }
+    friend Self operator*(const Self& lhs, value_type rhs);
 
-    friend Self operator*(value_type lhs, const Self& rhs) {
-        auto res{rhs};
-        res *= lhs;
-        return res;
-    }
+    friend Self operator*(value_type lhs, const Self& rhs);
 
-    friend Self operator/(const Self& lhs, value_type rhs) {
-        auto res{lhs};
-        res /= rhs;
-        return res;
-    }
+    friend Self operator/(const Self& lhs, value_type rhs);
 
-    Self& operator+=(const Self& other) {
-        assert_dimension(other);
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] += other.data[i];
-        }
-        return *this;
-    }
+    Self& operator+=(const Self& other);
 
-    Self& operator+=(value_type value) {
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] += value;
-        }
-        return *this;
-    }
+    Self& operator+=(value_type value);
 
-    Self& operator-=(const Self& other) {
-        assert_dimension(other);
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] -= other.data[i];
-        }
-        return *this;
-    }
+    Self& operator-=(const Self& other);
 
-    Self& operator-=(value_type value) {
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] -= value;
-        }
-        return *this;
-    }
+    Self& operator-=(value_type value);
 
-    Self& operator*=(const Self& other) {
-        return *this = *this * other;
-    }
+    Self& operator*=(const Self& other);
 
-    Self& operator*=(value_type value) {
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] *= value;
-        }
-        return *this;
-    }
+    Self& operator*=(value_type value);
 
-    Self& operator/=(value_type value) {
-        for (size_t i{0}; i < data.size(); i++) {
-            data[i] /= value;
-        }
-        return *this;
-    }
+    Self& operator/=(value_type value);
 
 #pragma endregion operators
 
   private:
     Matrix() = default;
-
-    void assert_dimension(const Self&) const {}
 
   private:
     size_t rows;
@@ -201,10 +102,6 @@ class Matrix {
 namespace matoy {
 using foundations::Matrix;
 }
-
-#ifdef assert
-#undef assert
-#endif
 
 template <>
 struct std::formatter<matoy::Matrix> : std::formatter<char> {
