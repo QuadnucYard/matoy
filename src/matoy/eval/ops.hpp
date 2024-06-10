@@ -3,6 +3,7 @@
 #include "fwd.hpp"
 #include "matoy/diag.hpp"
 #include "matoy/utils/match.hpp"
+#include <compare>
 #include <type_traits>
 #include <variant>
 
@@ -96,6 +97,45 @@ inline auto or_(Value lhs, Value rhs) -> ValueResult {
             [](bool&& a, bool&& b) { return a || b; },
             [](auto&& a, auto&& b) { return diag::hint_error(std::format("cannot apply 'and' to {} and {}", a, b)); }},
         std::move(lhs), std::move(rhs));
+}
+
+inline auto equal(const Value& lhs, const Value& rhs) -> bool {
+    return std::visit<bool>(utils::overloaded{                                              //
+                                              []<class T>(T&& a, T&& b) { return a == b; }, //
+                                              [](auto&&, auto&&) { return false; }},        //
+                            lhs, rhs);
+}
+
+inline auto compare(const Value& lhs, const Value& rhs) -> diag::HintedResult<std::partial_ordering> {
+    return std::visit<diag::HintedResult<std::partial_ordering>>(
+        utils::overloaded{
+            [](auto&& a, std::three_way_comparable_with<std::decay_t<decltype(a)>> auto&& b) { return a <=> b; },
+            [](auto&& a, auto&& b) { return diag::hint_error(std::format("cannot compare {} and {}", a, b)); }},
+        lhs, rhs);
+}
+
+inline auto eq(Value lhs, Value rhs) -> ValueResult {
+    return equal(lhs, rhs);
+}
+
+inline auto neq(Value lhs, Value rhs) -> ValueResult {
+    return !equal(lhs, rhs);
+}
+
+inline auto lt(Value lhs, Value rhs) -> ValueResult {
+    return compare(lhs, rhs).transform([](auto ord) { return ord < 0; });
+}
+
+inline auto leq(Value lhs, Value rhs) -> ValueResult {
+    return compare(lhs, rhs).transform([](auto ord) { return ord <= 0; });
+}
+
+inline auto gt(Value lhs, Value rhs) -> ValueResult {
+    return compare(lhs, rhs).transform([](auto ord) { return ord > 0; });
+}
+
+inline auto geq(Value lhs, Value rhs) -> ValueResult {
+    return compare(lhs, rhs).transform([](auto ord) { return ord >= 0; });
 }
 
 } // namespace matoy::eval

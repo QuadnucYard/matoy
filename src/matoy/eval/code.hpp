@@ -105,12 +105,12 @@ inline auto eval(const ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
     case syntax::BinOp::Mul: return apply_binary(self, vm, mul);
     case syntax::BinOp::Div: return apply_binary(self, vm, div);
 
-    case syntax::BinOp::Eq:
-    case syntax::BinOp::Neq:
-    case syntax::BinOp::Lt:
-    case syntax::BinOp::Leq:
-    case syntax::BinOp::Gt:
-    case syntax::BinOp::Geq: throw "unimplemented!";
+    case syntax::BinOp::Eq:  return apply_binary(self, vm, eq);
+    case syntax::BinOp::Neq: return apply_binary(self, vm, neq);
+    case syntax::BinOp::Lt:  return apply_binary(self, vm, lt);
+    case syntax::BinOp::Leq: return apply_binary(self, vm, leq);
+    case syntax::BinOp::Gt:  return apply_binary(self, vm, gt);
+    case syntax::BinOp::Geq: return apply_binary(self, vm, geq);
 
     case syntax::BinOp::And: return apply_binary(self, vm, and_);
     case syntax::BinOp::Or:  return apply_binary(self, vm, or_);
@@ -147,7 +147,8 @@ inline auto apply_unary(const ast::Unary& unary, Vm& vm, auto op(Value)->ValueRe
     auto value = eval(unary.expr(), vm);
     if (!value)
         return value;
-    return diag::to_source_error(op(*value), unary.span());
+
+    return diag::to_source_error(op(std::move(*value)), unary.span());
 }
 
 inline auto apply_binary(const ast::Binary& binary, Vm& vm,
@@ -165,7 +166,8 @@ inline auto apply_binary(const ast::Binary& binary, Vm& vm,
     auto rhs = eval(binary.rhs(), vm);
     if (!rhs)
         return rhs;
-    return diag::to_source_error(op(*lhs, *rhs), binary.span());
+
+    return diag::to_source_error(op(std::move(*lhs), std::move(*rhs)), binary.span());
 }
 
 inline auto apply_assignment(const ast::Binary& binary, Vm& vm,
@@ -173,25 +175,33 @@ inline auto apply_assignment(const ast::Binary& binary, Vm& vm,
     auto rhs = eval(binary.rhs(), vm);
     if (!rhs)
         return rhs;
+
     auto loc = access(binary.lhs(), vm);
     if (!loc)
         return clone(std::move(loc));
+
     auto res = op(**loc, *rhs);
     if (!res)
-        return diag::to_source_error(res, binary.span());
+        return diag::to_source_error(std::move(res), binary.span());
+
     **loc = *res;
+
     return *res;
 }
 
 inline auto decl_assign(const ast::Binary& binary, Vm& vm) -> diag::SourceResult<Value> {
     auto ident = std::get<ast::Ident>(binary.lhs());
+
     auto rhs = eval(binary.rhs(), vm);
     if (!rhs)
         return rhs;
+
     if (access(binary.lhs(), vm)) {
         return diag::source_error(ident.span(), std::format("the variable \"{}\" already exists", ident.get()));
     }
+
     vm.define(ident.get(), Value{*rhs});
+
     return rhs;
 }
 
