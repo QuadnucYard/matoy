@@ -3,8 +3,8 @@
 namespace matoy::utils {
 
 // a `matches!` like checker
-template <typename T, typename... Args>
-inline auto is_in(const T& value, const Args&&... args) {
+template <auto... args, class T>
+inline auto is_in(const T& value) {
     return ((value == args) || ...);
 }
 

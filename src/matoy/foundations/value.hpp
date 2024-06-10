@@ -8,7 +8,11 @@ namespace matoy::foundations {
 
 namespace values {
 
-struct None {};
+struct None {
+    auto operator==(const None&) const -> bool {
+        return true;
+    }
+};
 
 using none_t = None;
 using int_t = int64_t;

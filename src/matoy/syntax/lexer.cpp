@@ -10,7 +10,7 @@
 namespace matoy::syntax {
 
 auto is_newline(char c) -> bool {
-    return utils::is_in(c, '\n', '\r', '\0x0b', '\0x0c');
+    return utils::is_in<'\n', '\r', '\0x0b', '\0x0c'>(c);
 }
 
 auto is_id_start(char c) -> bool {
@@ -28,6 +28,12 @@ auto keyword(std::string_view ident) -> std::optional<Token> {
         return Token::Bool;
     if (ident == "false")
         return Token::Bool;
+    if (ident == "not")
+        return Token::Not;
+    if (ident == "and")
+        return Token::And;
+    if (ident == "or")
+        return Token::Or;
     return std::nullopt;
 }
 

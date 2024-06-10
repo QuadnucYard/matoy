@@ -19,7 +19,7 @@ class Scanner {
     }
 
     std::string_view get_from(size_t start) const {
-        return str_.substr(start);
+        return str_.substr(start, cursor_ - start);
     }
 
     std::string_view get_before(size_t start) const {

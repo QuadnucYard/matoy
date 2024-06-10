@@ -51,13 +51,13 @@ inline constexpr TokenSet atomic_primary{Token::Ident, Token::LBrace, Token::LBr
 inline constexpr TokenSet primary{atomic_primary};
 
 /// Syntax kinds that are unary operators.
-inline constexpr TokenSet unary_op{Token::Plus, Token::Minus};
+inline constexpr TokenSet unary_op{Token::Plus, Token::Minus, Token::Not};
 
 /// Syntax kinds that are binary operators.
-inline constexpr TokenSet binary_op{Token::Plus,   Token::Minus,   Token::Star,   Token::Slash,
-                                    Token::PlusEq, Token::MinusEq, Token::StarEq, Token::SlashEq,
-                                    Token::ExclEq, Token::Eq,      Token::EqEq,   Token::Lt,
-                                    Token::LtEq,   Token::Gt,      Token::GtEq,   Token::ColonEq};
+inline constexpr TokenSet binary_op{Token::Plus,    Token::Minus,  Token::Star,    Token::Slash,  Token::PlusEq,
+                                    Token::MinusEq, Token::StarEq, Token::SlashEq, Token::ExclEq, Token::Eq,
+                                    Token::EqEq,    Token::Lt,     Token::LtEq,    Token::Gt,     Token::GtEq,
+                                    Token::ColonEq, Token::And,    Token::Or};
 
 /// Syntax kinds that can start an atomic code expression.
 inline constexpr TokenSet atomic_expr{atomic_primary};

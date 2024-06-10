@@ -7,6 +7,7 @@
 #include "matoy/foundations/matrix.hpp"
 #include "matoy/foundations/value.hpp"
 #include "matoy/syntax/ast.hpp"
+#include "matoy/syntax/op.hpp"
 #include "vm.hpp"
 #include <variant>
 
@@ -16,6 +17,8 @@ template <typename T>
 auto eval(const T& self, Vm& vm) -> diag::SourceResult<Value> = delete;
 
 template <> auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
+
+auto apply_unary(const ast::Unary& unary, Vm& vm, auto op(Value)->ValueResult) -> diag::SourceResult<Value>;
 
 auto apply_binary(const ast::Binary& binary, Vm& vm, auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value>;
 
@@ -87,12 +90,10 @@ inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value
 
 template <>
 inline auto eval(const ast::Unary& self, Vm& vm) -> diag::SourceResult<Value> {
-    auto value = eval(self.expr(), vm);
-    if (!value)
-        return value;
     switch (self.op()) {
-    case syntax::UnOp::Pos: return diag::to_source_error(pos(*value), self.span());
-    case syntax::UnOp::Neg: return diag::to_source_error(neg(*value), self.span());
+    case syntax::UnOp::Pos: return apply_unary(self, vm, pos);
+    case syntax::UnOp::Neg: return apply_unary(self, vm, neg);
+    case syntax::UnOp::Not: return apply_unary(self, vm, not_);
     }
 }
 
@@ -110,6 +111,9 @@ inline auto eval(const ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
     case syntax::BinOp::Leq:
     case syntax::BinOp::Gt:
     case syntax::BinOp::Geq: throw "unimplemented!";
+
+    case syntax::BinOp::And: return apply_binary(self, vm, and_);
+    case syntax::BinOp::Or:  return apply_binary(self, vm, or_);
 
     case syntax::BinOp::Assign:     return apply_assignment(self, vm, +[](Value, Value b) -> ValueResult { return b; });
     case syntax::BinOp::DeclAssign: return decl_assign(self, vm);
@@ -139,12 +143,25 @@ inline auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value> {
     return self.visit([&vm](auto& e) { return eval(e, vm); });
 }
 
+inline auto apply_unary(const ast::Unary& unary, Vm& vm, auto op(Value)->ValueResult) -> diag::SourceResult<Value> {
+    auto value = eval(unary.expr(), vm);
+    if (!value)
+        return value;
+    return diag::to_source_error(op(*value), unary.span());
+}
+
 inline auto apply_binary(const ast::Binary& binary, Vm& vm,
                          auto op(Value, Value)->ValueResult) -> diag::SourceResult<Value> {
     auto lhs = eval(binary.lhs(), vm);
     if (!lhs)
         return lhs;
-    // short-circuit
+
+    // Short-circuit boolean operations.
+    if ((binary.op() == syntax::BinOp::And && *lhs == Value{false}) ||
+        (binary.op() == syntax::BinOp::Or && *lhs == Value{true})) {
+        return lhs;
+    }
+
     auto rhs = eval(binary.rhs(), vm);
     if (!rhs)
         return rhs;

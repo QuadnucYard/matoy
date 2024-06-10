@@ -10,6 +10,7 @@ enum class Assoc { Left, Right };
 enum class UnOp {
     Pos, // +
     Neg, // -
+    Not, // not
 };
 
 enum class BinOp {
@@ -17,12 +18,16 @@ enum class BinOp {
     Sub, // -
     Mul, // *
     Div, // /
+
     Eq,  // ==
     Neq, // !=
     Lt,  // <
     Leq, // <=
     Gt,  // >
     Geq, // >=
+
+    And, // and
+    Or,  // or
 
     Assign,     // =
     DeclAssign, // :=
@@ -36,6 +41,7 @@ inline auto unop_from_token(Token token) -> std::optional<UnOp> {
     switch (token) {
     case Token::Plus:  return UnOp::Pos;
     case Token::Minus: return UnOp::Neg;
+    case Token::Not:   return UnOp::Not;
     default:           return std::nullopt;
     }
 }
@@ -58,6 +64,8 @@ inline auto binop_from_token(Token token) -> std::optional<BinOp> {
     case Token::Gt:      return BinOp::Gt;
     case Token::GtEq:    return BinOp::Geq;
     case Token::ColonEq: return BinOp::DeclAssign;
+    case Token::And:     return BinOp::And;
+    case Token::Or:      return BinOp::Or;
     default:             return std::nullopt;
     }
 }
@@ -66,6 +74,7 @@ inline auto precedence(UnOp op) -> int {
     switch (op) {
     case UnOp::Pos:
     case UnOp::Neg: return 7;
+    case UnOp::Not: return 4;
     }
 }
 
@@ -81,6 +90,8 @@ inline auto precedence(BinOp op) -> int {
     case BinOp::Leq:
     case BinOp::Gt:
     case BinOp::Geq:        return 4;
+    case BinOp::And:        return 3;
+    case BinOp::Or:         return 2;
     case BinOp::Assign:
     case BinOp::DeclAssign:
     case BinOp::AddAssign:
@@ -101,7 +112,9 @@ inline auto assoc(BinOp op) -> Assoc {
     case BinOp::Lt:
     case BinOp::Leq:
     case BinOp::Gt:
-    case BinOp::Geq:        return Assoc::Left;
+    case BinOp::Geq:
+    case BinOp::And:
+    case BinOp::Or:         return Assoc::Left;
     case BinOp::Assign:
     case BinOp::DeclAssign:
     case BinOp::AddAssign:

@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include <algorithm>
 #include <cassert>
 
 namespace matoy::foundations {
@@ -95,6 +96,10 @@ Matrix operator/(const Matrix& lhs, Matrix::value_type rhs) {
     auto res{lhs};
     res /= rhs;
     return res;
+}
+
+bool operator==(const Matrix& lhs, const Matrix& rhs) {
+    return lhs.shape() == rhs.shape() && lhs.data == rhs.data;
 }
 
 Matrix& Matrix::operator+=(const Matrix& other) {

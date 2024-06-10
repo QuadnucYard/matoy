@@ -22,6 +22,10 @@ class Matrix {
         return res;
     }
 
+    auto size() const -> size_t {
+        return rows * cols;
+    }
+
     auto shape() const -> std::pair<size_t, size_t> {
         return {rows, cols};
     }
@@ -69,6 +73,8 @@ class Matrix {
     friend Self operator*(value_type lhs, const Self& rhs);
 
     friend Self operator/(const Self& lhs, value_type rhs);
+
+    friend bool operator==(const Self& lhs, const Self& rhs);
 
     Self& operator+=(const Self& other);
 

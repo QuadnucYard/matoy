@@ -44,29 +44,32 @@ enum class Token : int8_t {
     LBrace,   // {
     RBrace,   // }
 
+    None,
+    Not,
+    And,
+    Or,
+
     Ident,
     Int,
     Float,
     Bool,
     Str,
-
-    None,
 };
 
-inline bool is_trivia(Token token) {
-    return utils::is_in(token, Token::LineComment, Token::BlockComment, Token::Space);
+inline bool is_trivia(Token self) {
+    return utils::is_in<Token::LineComment, Token::BlockComment, Token::Space>(self);
 }
 
-inline bool is_error(Token token) {
-    return token == Token::Error;
+inline bool is_error(Token self) {
+    return self == Token::Error;
 }
 
-inline bool is_keyword(Token) {
-    return false;
+inline bool is_keyword(Token self) {
+    return utils::is_in<Token::None, Token::Not, Token::And, Token::Or>(self);
 }
 
-inline bool is_terminator(Token token) {
-    return utils::is_in(token, Token::End, Token::Semicolon, Token::RBrace, Token::RParen, Token::RBracket);
+inline bool is_terminator(Token self) {
+    return utils::is_in<Token::End, Token::Semicolon, Token::RBrace, Token::RParen, Token::RBracket>(self);
 }
 
 inline auto get_name(Token self) -> std::string_view {
@@ -108,13 +111,16 @@ inline auto get_name(Token self) -> std::string_view {
     case Token::LBrace:   return "opening brace";
     case Token::RBrace:   return "closing brace";
 
+    case Token::None: return "none";
+    case Token::Not:  return "not";
+    case Token::And:  return "and";
+    case Token::Or:   return "or";
+
     case Token::Ident: return "identifier";
     case Token::Int:   return "integer";
     case Token::Float: return "float";
     case Token::Bool:  return "boolean";
     case Token::Str:   return "string";
-
-    case Token::None: return "none";
     }
 }
 
