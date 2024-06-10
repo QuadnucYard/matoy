@@ -3,7 +3,9 @@
 #include "matoy/utils/match.hpp"
 #include <cstdlib>
 #include <format>
+#include <optional>
 #include <string>
+#include <string_view>
 
 namespace matoy::syntax {
 
@@ -17,6 +19,16 @@ auto is_id_start(char c) -> bool {
 
 auto is_id_continue(char c) -> bool {
     return c == '_' || is_alnum(c);
+}
+
+auto keyword(std::string_view ident) -> std::optional<Token> {
+    if (ident == "none")
+        return Token::None;
+    if (ident == "true")
+        return Token::Bool;
+    if (ident == "false")
+        return Token::Bool;
+    return std::nullopt;
 }
 
 struct Lexer::Impl {
@@ -146,8 +158,17 @@ struct Lexer::Impl {
         }
     }
 
-    static auto ident(Lexer& l, size_t) -> Token {
+    static auto ident(Lexer& l, size_t start) -> Token {
         l.s.eat_while(is_id_continue);
+        auto ident = l.s.get_from(start);
+
+        auto prev = l.s.get_before(start);
+        if (!prev.ends_with('.')) {
+            if (auto kw = keyword(ident)) {
+                return *kw;
+            }
+        }
+
         return Token::Ident;
     }
 

@@ -93,10 +93,14 @@ struct Parser::Impl {
         case Token::LBrace:   code_block(p); break;
         case Token::LParen:   expr_with_paren(p, atomic); break;
         case Token::LBracket: matrix(p); break;
+
+        case Token::None:
         case Token::Int:
         case Token::Float:
-        case Token::Str:      p.eat(); break;
-        default:              p.expected("expression"); break;
+        case Token::Bool:
+        case Token::Str:   p.eat(); break;
+
+        default: p.expected("expression"); break;
         }
     }
 

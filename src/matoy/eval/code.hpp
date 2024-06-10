@@ -5,6 +5,7 @@
 #include "matoy/eval/ops.hpp"
 #include "matoy/foundations/fields.hpp"
 #include "matoy/foundations/matrix.hpp"
+#include "matoy/foundations/value.hpp"
 #include "matoy/syntax/ast.hpp"
 #include "vm.hpp"
 #include <variant>
@@ -29,12 +30,22 @@ inline auto eval(const ast::Ident& self, Vm& vm) -> diag::SourceResult<Value> {
 }
 
 template <>
+inline auto eval(const ast::None&, Vm&) -> diag::SourceResult<Value> {
+    return values::none_t{};
+}
+
+template <>
 inline auto eval(const ast::Int& self, Vm&) -> diag::SourceResult<Value> {
     return self.get();
 }
 
 template <>
 inline auto eval(const ast::Float& self, Vm&) -> diag::SourceResult<Value> {
+    return self.get();
+}
+
+template <>
+inline auto eval(const ast::Bool& self, Vm&) -> diag::SourceResult<Value> {
     return self.get();
 }
 
@@ -64,12 +75,12 @@ inline auto eval(const ast::Parenthesized& self, Vm& vm) -> diag::SourceResult<V
 
 template <>
 inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
-    Value output;
+    Value output = values::none_t{};
     for (auto&& expr : self.exprs()) {
         auto res = eval(expr, vm);
         if (!res)
             return res;
-        output = *res;
+        output = std::move(*res);
     }
     return output;
 }

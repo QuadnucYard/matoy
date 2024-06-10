@@ -31,6 +31,8 @@ struct Ident : AstNode {
     }
 };
 
+struct None : AstNode {};
+
 struct Int : AstNode {
     auto get() const -> int64_t {
         return parse_int<int64_t>(n.as_leaf()->text).value_or(0);
@@ -43,6 +45,12 @@ struct Float : AstNode {
     }
 };
 
+struct Bool : AstNode {
+    auto get() const -> bool {
+        return n.as_leaf()->text == "true";
+    }
+};
+
 struct Parenthesized;
 struct MatrixRow;
 struct Matrix;
@@ -50,7 +58,8 @@ struct Unary;
 struct Binary;
 struct FieldAccess;
 struct FuncCall;
-using Expr = std::variant<CodeBlock, Ident, Int, Float, Parenthesized, Matrix, Unary, Binary, FieldAccess, FuncCall>;
+using Expr =
+    std::variant<CodeBlock, Ident, None, Int, Float, Bool, Parenthesized, Matrix, Unary, Binary, FieldAccess, FuncCall>;
 
 struct Parenthesized : AstNode {
     auto expr() const -> Expr;
@@ -197,8 +206,10 @@ inline auto FieldAccess::field() const -> Ident {
     }
 
 IMPL_TYPED0(Ident)
+IMPL_TYPED0(None)
 IMPL_TYPED0(Int)
 IMPL_TYPED0(Float)
+IMPL_TYPED0(Bool)
 
 IMPL_TYPED(CodeBlock)
 IMPL_TYPED(Parenthesized)
@@ -217,8 +228,10 @@ inline auto from_untyped<ast::Expr>(const SyntaxNode& node) -> std::optional<ast
     if (auto leaf = node.as_leaf()) {
         switch (leaf->token) {
         case Token::Ident: return ast::Ident{node};
+        case Token::None:  return ast::None{node};
         case Token::Int:   return ast::Int{node};
         case Token::Float: return ast::Float{node};
+        case Token::Bool:  return ast::Bool{node};
         default:           return std::nullopt;
         }
     }

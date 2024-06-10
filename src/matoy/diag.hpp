@@ -100,18 +100,18 @@ inline auto to_source_error(HintedResult<T>&& result, syntax::Span span) -> Sour
 }
 
 template <class T>
-inline auto to_source_error(HintedResult<T>& result, syntax::Span span) {
+inline decltype(auto) to_source_error(HintedResult<T>& result, syntax::Span span) {
     return to_source_error(std::move(result), span);
 }
 
 template <class T, class E>
-inline auto to_source_error(std::expected<T, E>&& result, syntax::Span span) {
+inline decltype(auto) to_source_error(std::expected<T, E>&& result, syntax::Span span) {
     return std::move(result).transform_error(
         [span](auto&& err) { return std::vector<SourceDiagnostic>{SourceDiagnostic::error(span, std::move(err))}; });
 }
 
 template <class T, class E>
-inline auto to_source_error(std::expected<T, E>& result, syntax::Span span) {
+inline decltype(auto) to_source_error(std::expected<T, E>& result, syntax::Span span) {
     return to_source_error(std::move(result), span);
 }
 
@@ -120,8 +120,8 @@ inline auto to_source_error(std::expected<T, E>& result, syntax::Span span) {
 namespace matoy {
 
 template <class T, class E>
-inline auto clone(std::expected<T*, E>&& result) {
-    return result.transform([](auto&& val) { return *val; });
+inline decltype(auto) clone(std::expected<T*, E>&& result) {
+    return result.transform([](auto&& val) { return std::move(*val); });
 }
 
 template <class T, class F, class E = std::invoke_result_t<F>>

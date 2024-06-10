@@ -14,9 +14,16 @@ class Scanner {
     size_t cursor() const {
         return cursor_;
     }
-
     std::string_view get(size_t start, size_t end) const {
         return str_.substr(start, end - start);
+    }
+
+    std::string_view get_from(size_t start) const {
+        return str_.substr(start);
+    }
+
+    std::string_view get_before(size_t start) const {
+        return str_.substr(0, start);
     }
 
     std::optional<char> peek() const {

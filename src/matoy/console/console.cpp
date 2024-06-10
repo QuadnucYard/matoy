@@ -4,6 +4,7 @@
 #include <iostream>
 #include <print>
 #include <string>
+#include <variant>
 
 namespace matoy::console {
 
@@ -18,7 +19,9 @@ void Console::loop() {
         const auto str = input();
         const auto out = eval::eval_string(str, vm);
         if (out) {
-            std::println("{}", *out);
+            if (!std::holds_alternative<values::none_t>(*out)) {
+                std::println("{}", *out);
+            }
         } else {
             for (auto& e : out.error()) {
                 std::println("\033[1;31m"
