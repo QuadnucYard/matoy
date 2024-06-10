@@ -169,13 +169,13 @@ struct Parser::Impl {
     }
 };
 
-auto Parser::parse(std::string_view text) -> SyntaxNode {
+auto Parser::parse(std::string_view text) -> std::pair<SyntaxNode, bool> {
     Parser p{text};
     auto m = p.marker();
     p.skip();
     Parser::Impl::code_exprs(p, [](Parser&) { return false; });
     p.reduce_all(m, SyntaxKind::CodeBlock);
-    return std::move(p.finish().at(0));
+    return {std::move(p.finish().at(0)), p.has_inner_errors};
 }
 
 void Parser::reduce_within(Marker from, Marker to, SyntaxKind kind) {
@@ -246,6 +246,9 @@ void Parser::expected(std::string_view thing) {
 
 void Parser::expected_at(Marker m, std::string_view thing) {
     nodes.insert(nodes.begin() + *m, SyntaxNode::error("", std::format("expected {}", thing), current_span()));
+    if (!end()) {
+        has_inner_errors = true;
+    }
 }
 
 void Parser::unexpected() {

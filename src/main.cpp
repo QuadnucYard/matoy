@@ -49,7 +49,7 @@ void test_lexer() {
 }
 
 void print_syntax(std::string_view input) {
-    auto node = Parser::parse(input);
+    auto [node, _] = Parser::parse(input);
     print_node(node);
 }
 

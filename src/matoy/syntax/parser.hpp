@@ -24,7 +24,7 @@ class Parser {
     Parser(std::string_view text, size_t offset = 0)
         : text{text}, lexer{text}, prev_end{offset}, current_start{offset}, current{lexer.next().v} {}
 
-    static auto parse(std::string_view text) -> SyntaxNode;
+    static auto parse(std::string_view text) -> std::pair<SyntaxNode, bool>;
 
   private:
     size_t current_end() const {
@@ -155,6 +155,7 @@ class Parser {
     size_t current_start;
     Token current;
     std::vector<SyntaxNode> nodes;
+    bool has_inner_errors{false};
 };
 
 } // namespace matoy::syntax

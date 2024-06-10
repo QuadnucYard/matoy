@@ -11,7 +11,7 @@ class Console {
     void loop();
 
   private:
-    std::string input();
+    std::string input(bool cont);
 };
 
 } // namespace matoy::console

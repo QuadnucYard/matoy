@@ -15,9 +15,14 @@ void Console::start() {
 void Console::loop() {
     eval::Vm vm;
 
+    auto str = input(false);
     while (true) {
-        const auto str = input();
-        const auto out = eval::eval_string(str, vm);
+        const auto out_ = eval::try_eval_string(str, vm);
+        if (!out_) {
+            str += input(true);
+            continue;
+        }
+        const auto& out = *out_;
         if (out) {
             if (!std::holds_alternative<values::none_t>(*out)) {
                 std::println("{}", *out);
@@ -36,16 +41,22 @@ void Console::loop() {
                 }
             }
         }
+        str = input(false);
     }
 }
 
-std::string Console::input() {
-    std::print("\033[36m"
-               ">>> "
-               "\033[0m");
+std::string Console::input(bool cont) {
+    if (cont) {
+        std::print("\033[36m"
+                   "  > "
+                   "\033[0m");
+    } else {
+        std::print("\033[36m"
+                   ">>> "
+                   "\033[0m");
+    }
     std::string str;
     std::getline(std::cin, str);
-    // TODO judge whether the input is ended
     return str;
 }
 
