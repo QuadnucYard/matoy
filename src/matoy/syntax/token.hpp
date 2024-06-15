@@ -51,6 +51,17 @@ enum class Token : int8_t {
     And,
     Or,
 
+    In,
+    As,
+
+    If,
+    Else,
+    For,
+    While,
+    Break,
+    Continue,
+    Return,
+
     Ident,
     Int,
     Float,
@@ -67,7 +78,8 @@ inline bool is_error(Token self) {
 }
 
 inline bool is_keyword(Token self) {
-    return utils::is_in<Token::None, Token::Not, Token::And, Token::Or>(self);
+    return utils::is_in<Token::None, Token::Not, Token::And, Token::Or, Token::In, Token::As, Token::If, Token::Else,
+                        Token::For, Token::While, Token::Break, Token::Continue, Token::Return>(self);
 }
 
 inline bool is_terminator(Token self) {
@@ -116,9 +128,20 @@ inline auto get_name(Token self) -> std::string_view {
     case Token::RBrace:   return "closing brace";
 
     case Token::None: return "none";
-    case Token::Not:  return "not";
-    case Token::And:  return "and";
-    case Token::Or:   return "or";
+    case Token::Not:  return "operator `not`";
+    case Token::And:  return "operator `and`";
+    case Token::Or:   return "operator `or`";
+
+    case Token::In: return "keyword `in`";
+    case Token::As: return "keyword `as`";
+
+    case Token::If:       return "keyword `if`";
+    case Token::Else:     return "keyword `else`";
+    case Token::For:      return "keyword `for`";
+    case Token::While:    return "keyword `while`";
+    case Token::Break:    return "keyword `break`";
+    case Token::Continue: return "keyword `continue`";
+    case Token::Return:   return "keyword `return`";
 
     case Token::Ident: return "identifier";
     case Token::Int:   return "integer";

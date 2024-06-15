@@ -16,7 +16,7 @@ struct Parser::Impl {
     static auto code(Parser& p, std::predicate<Parser&> auto stop) -> void {
         auto m = p.marker();
         code_exprs(p, stop);
-        p.reduce(m, SyntaxKind::CodeBlock);
+        p.reduce(m, SyntaxKind::Code);
     }
 
     static auto code_exprs(Parser& p, std::predicate<Parser&> auto stop) -> void {
@@ -92,6 +92,13 @@ struct Parser::Impl {
         case Token::LBrace:   code_block(p); break;
         case Token::LParen:   expr_with_paren(p, atomic); break;
         case Token::LBracket: matrix(p); break;
+
+        case Token::If:       conditional(p); break;
+        case Token::While:    while_loop(p); break;
+        case Token::For:      for_loop(p); break;
+        case Token::Break:    break_stmt(p); break;
+        case Token::Continue: continue_stmt(p); break;
+        case Token::Return:   return_stmt(p); break;
 
         case Token::None:
         case Token::Int:
@@ -194,6 +201,54 @@ struct Parser::Impl {
         p.expect_closing_delimiter(m, Token::RBracket);
         p.reduce(m, SyntaxKind::Matrix);
     }
+
+    /// Parses an if-else conditional: `if x { y } else { z }`.
+    static auto conditional(Parser& p) -> void {
+        auto m = p.marker();
+        p.assert_cur(Token::If);
+        code_expr(p);
+        code_block(p);
+        if (p.eat_if(Token::Else)) {
+            if (p.at(Token::If)) {
+                conditional(p);
+            } else {
+                code_block(p);
+            }
+        }
+        p.reduce(m, SyntaxKind::Conditional);
+    }
+
+    /// Parses a while loop: `while x { y }`.
+    static auto while_loop(Parser& p) -> void {
+        auto m = p.marker();
+        p.assert_cur(Token::While);
+        code_expr(p);
+        code_block(p);
+        p.reduce(m, SyntaxKind::WhileLoop);
+    }
+
+    /// Parses a for loop: `for x in y { z }`.
+    static auto for_loop(Parser&) -> void {
+        throw "unimplemented";
+    }
+
+    static auto break_stmt(Parser& p) -> void {
+        auto m = p.marker();
+        p.assert_cur(Token::Break);
+        p.reduce(m, SyntaxKind::LoopBreak);
+    }
+
+    static auto continue_stmt(Parser& p) -> void {
+        auto m = p.marker();
+        p.assert_cur(Token::Continue);
+        p.reduce(m, SyntaxKind::LoopContinue);
+    }
+
+    static auto return_stmt(Parser& p) -> void {
+        auto m = p.marker();
+        p.assert_cur(Token::Return);
+        p.reduce(m, SyntaxKind::FuncReturn);
+    }
 };
 
 auto Parser::parse(std::string_view text) -> std::pair<SyntaxNode, bool> {
@@ -201,7 +256,7 @@ auto Parser::parse(std::string_view text) -> std::pair<SyntaxNode, bool> {
     auto m = p.marker();
     p.skip();
     Parser::Impl::code_exprs(p, [](Parser&) { return false; });
-    p.reduce_all(m, SyntaxKind::CodeBlock);
+    p.reduce_all(m, SyntaxKind::Code);
     return {std::move(p.finish().at(0)), p.has_inner_errors};
 }
 

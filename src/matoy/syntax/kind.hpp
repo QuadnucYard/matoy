@@ -8,6 +8,7 @@ namespace matoy::syntax {
 enum class SyntaxKind : int8_t {
     Error,
 
+    Code,
     CodeBlock,
     Parenthesized,
 
@@ -19,11 +20,20 @@ enum class SyntaxKind : int8_t {
     FieldAccess,
     FuncCall,
     Args,
+
+    Conditional,
+    WhileLoop,
+    ForLoop,
+
+    LoopBreak,
+    LoopContinue,
+    FuncReturn,
 };
 
 inline auto get_name(SyntaxKind self) -> std::string_view {
     switch (self) {
     case SyntaxKind::Error:         return "error";
+    case SyntaxKind::Code:          return "code";
     case SyntaxKind::CodeBlock:     return "code block";
     case SyntaxKind::Parenthesized: return "group";
     case SyntaxKind::Matrix:        return "matrix expression";
@@ -33,6 +43,12 @@ inline auto get_name(SyntaxKind self) -> std::string_view {
     case SyntaxKind::FieldAccess:   return "field access";
     case SyntaxKind::FuncCall:      return "function call";
     case SyntaxKind::Args:          return "call arguments";
+    case SyntaxKind::Conditional:   return "`if` expression";
+    case SyntaxKind::WhileLoop:     return "while-loop expression";
+    case SyntaxKind::ForLoop:       return "for-loop expression";
+    case SyntaxKind::LoopBreak:     return "`break` expression";
+    case SyntaxKind::LoopContinue:  return "`continue` expression";
+    case SyntaxKind::FuncReturn:    return "`return` expression";
     }
 }
 

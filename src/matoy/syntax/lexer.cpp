@@ -34,6 +34,24 @@ auto keyword(std::string_view ident) -> std::optional<Token> {
         return Token::And;
     if (ident == "or")
         return Token::Or;
+    if (ident == "in")
+        return Token::In;
+    if (ident == "as")
+        return Token::As;
+    if (ident == "if")
+        return Token::If;
+    if (ident == "else")
+        return Token::Else;
+    if (ident == "for")
+        return Token::For;
+    if (ident == "while")
+        return Token::While;
+    if (ident == "break")
+        return Token::Break;
+    if (ident == "continue")
+        return Token::Continue;
+    if (ident == "return")
+        return Token::Return;
     return std::nullopt;
 }
 

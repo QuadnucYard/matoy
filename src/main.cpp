@@ -55,8 +55,21 @@ void print_syntax(std::string_view input) {
 
 void test_parser() {
     std::string_view input{R"(
-    A := [1 + 6, 2 - (4 * 1);
-            -31,        4.73]
+    {
+        1.2
+    }
+    1 + 3
+    { 3.4 }
+    if 1.0 < 2.0 { 5.0 } else { 6.0 }
+    if 1.0 > 2.0 {
+        5.0
+    } else {
+        6.0
+    }
+    i := 0
+    while i < 2 {
+        i += 1
+    }
     )"};
     print_tokens(input);
     print_syntax(input);
@@ -82,6 +95,7 @@ void test_eval() {
 }
 
 int main() {
+    test_parser();
     // test_eval();
     Console console;
     console.start();

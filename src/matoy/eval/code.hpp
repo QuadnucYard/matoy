@@ -3,6 +3,8 @@
 #include "matoy/diag.hpp"
 #include "matoy/eval/access.hpp"
 #include "matoy/eval/fields.hpp"
+#include "matoy/eval/flow.hpp"
+#include "matoy/eval/fwd.hpp"
 #include "matoy/eval/ops.hpp"
 #include "matoy/foundations/matrix.hpp"
 #include "matoy/foundations/value.hpp"
@@ -12,9 +14,6 @@
 #include <variant>
 
 namespace matoy::eval {
-
-template <typename T>
-auto eval(const T& self, Vm& vm) -> diag::SourceResult<Value> = delete;
 
 template <> auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
 
@@ -77,7 +76,7 @@ inline auto eval(const ast::Parenthesized& self, Vm& vm) -> diag::SourceResult<V
 }
 
 template <>
-inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
+inline auto eval(const ast::Code& self, Vm& vm) -> diag::SourceResult<Value> {
     Value output = values::none_t{};
     for (auto&& expr : self.exprs()) {
         auto res = eval(expr, vm);
@@ -86,6 +85,12 @@ inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value
         output = std::move(*res);
     }
     return output;
+}
+
+template <>
+inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
+    // TODO scope
+    return eval(self.body(), vm);
 }
 
 template <>

@@ -187,6 +187,31 @@ struct SyntaxNode {
         using namespace utils;
         return ranges::find_map(as_inner()->children | std::views::reverse, &SyntaxNode::cast<T>);
     }
+
+    /// Cast the nth child that can cast to the AST type `T`.
+    template <typename T>
+    std::optional<T> cast_nth_match(size_t n) const {
+        size_t skipped{};
+        for (auto& ch : as_inner()->children) {
+            if (auto v = ch.cast<T>()) {
+                if (skipped++ == n) {
+                    return *v;
+                }
+            }
+        }
+        return std::nullopt;
+    }
+
+    template <typename T>
+    std::vector<T> cast_all_matches() const {
+        std::vector<T> res;
+        for (auto& child : as_inner()->children) {
+            if (auto e = child.cast<T>()) {
+                res.push_back(*e);
+            }
+        }
+        return res;
+    }
 };
 
 } // namespace matoy::syntax

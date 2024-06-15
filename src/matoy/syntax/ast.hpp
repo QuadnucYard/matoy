@@ -7,6 +7,7 @@
 #include "matoy/utils/ranges.hpp"
 #include <optional>
 #include <string_view>
+#include <utility>
 #include <variant>
 
 namespace matoy::syntax {
@@ -21,8 +22,14 @@ struct AstNode {
 
 namespace ast {
 
-struct CodeBlock : AstNode {
+struct Code : AstNode {
     auto exprs() const;
+};
+
+struct CodeBlock : AstNode {
+    auto body() const -> Code {
+        return n.cast_first_match<Code>().value();
+    }
 };
 
 struct Ident : AstNode {
@@ -58,8 +65,14 @@ struct Unary;
 struct Binary;
 struct FieldAccess;
 struct FuncCall;
-using Expr =
-    std::variant<CodeBlock, Ident, None, Int, Float, Bool, Parenthesized, Matrix, Unary, Binary, FieldAccess, FuncCall>;
+struct Conditional;
+struct WhileLoop;
+struct ForLoop;
+struct LoopBreak;
+struct LoopContinue;
+struct FuncReturn;
+using Expr = std::variant<CodeBlock, Ident, None, Int, Float, Bool, Parenthesized, Matrix, Unary, Binary, FieldAccess,
+                          FuncCall, Conditional, WhileLoop, ForLoop, LoopBreak, LoopContinue, FuncReturn>;
 
 struct Parenthesized : AstNode {
     auto expr() const -> Expr;
@@ -94,43 +107,47 @@ struct FuncCall : AstNode {
 };
 
 struct Unary : AstNode {
-    auto op() const -> UnOp {
-        using namespace matoy::utils;
-        return ranges::find_map(n.as_inner()->children, [](auto& node) { return unop_from_token(node.token()); })
-            .value_or(UnOp::Pos);
-    }
+    auto op() const -> UnOp;
 
     auto expr() const -> Expr;
 };
 
 struct Binary : AstNode {
-    auto op() const -> BinOp {
-        using namespace matoy::utils;
-        return ranges::find_map(n.as_inner()->children, [](auto& node) { return binop_from_token(node.token()); })
-            .value_or(BinOp::Add);
-    }
+    auto op() const -> BinOp;
 
-    auto lhs() const -> Expr {
-        return n.cast_first_match<Expr>().value();
-    }
+    auto lhs() const -> Expr;
 
-    auto rhs() const -> Expr {
-        return n.cast_last_match<Expr>().value();
+    auto rhs() const -> Expr;
+};
+
+struct Conditional : AstNode {
+    auto condition() const -> Expr;
+
+    auto if_body() const -> Expr;
+
+    auto else_body() const -> Expr;
+};
+
+struct WhileLoop : AstNode {
+    auto condition() const -> Expr;
+
+    auto body() const -> Expr;
+};
+
+struct ForLoop : AstNode {};
+
+struct LoopBreak : AstNode {};
+
+struct LoopContinue : AstNode {};
+
+struct FuncReturn : AstNode {
+    auto body() const -> std::optional<Expr> {
+        return n.cast_first_match<Expr>();
     }
 };
 
-inline auto CodeBlock::exprs() const {
-    // return n.as_inner()->children | std::views::transform(&SyntaxNode::cast<Expr>) |
-    //        std::views::filter([](auto x) { return x; });
-    // return n.as_inner()->children | std::views::transform([](auto& x) -> auto { return x.template cast<Expr>(); }) |
-    //        std::views::filter([](auto x) { return x.has_value(); });
-    std::vector<Expr> res;
-    for (auto& child : n.as_inner()->children) {
-        if (auto e = child.cast<Expr>()) {
-            res.push_back(*e);
-        }
-    }
-    return res;
+inline auto Code::exprs() const {
+    return n.cast_all_matches<Expr>();
 }
 
 inline auto Parenthesized::expr() const -> Expr {
@@ -177,7 +194,27 @@ inline auto Matrix::items() const {
     return res;
 }
 
+inline auto Unary::op() const -> UnOp {
+    using namespace matoy::utils;
+    return ranges::find_map(n.as_inner()->children, [](auto& node) { return unop_from_token(node.token()); })
+        .value_or(UnOp::Pos);
+}
+
 inline auto Unary::expr() const -> Expr {
+    return n.cast_last_match<Expr>().value();
+}
+
+inline auto Binary::op() const -> BinOp {
+    using namespace matoy::utils;
+    return ranges::find_map(n.as_inner()->children, [](auto& node) { return binop_from_token(node.token()); })
+        .value_or(BinOp::Add);
+}
+
+inline auto Binary::lhs() const -> Expr {
+    return n.cast_first_match<Expr>().value();
+}
+
+inline auto Binary::rhs() const -> Expr {
     return n.cast_last_match<Expr>().value();
 }
 
@@ -190,13 +227,7 @@ inline auto FieldAccess::field() const -> Ident {
 }
 
 inline auto Args::items() const {
-    std::vector<Expr> res;
-    for (auto& child : n.as_inner()->children) {
-        if (auto e = child.cast<Expr>()) {
-            res.push_back(*e);
-        }
-    }
-    return res;
+    return n.cast_all_matches<Expr>();
 }
 
 inline auto FuncCall::callee() const -> Expr {
@@ -205,6 +236,26 @@ inline auto FuncCall::callee() const -> Expr {
 
 inline auto FuncCall::args() const -> Args {
     return n.cast_last_match<Args>().value();
+}
+
+inline auto Conditional::condition() const -> Expr {
+    return n.cast_first_match<Expr>().value();
+}
+
+inline auto Conditional::if_body() const -> Expr {
+    return n.cast_nth_match<Expr>(1).value();
+}
+
+inline auto Conditional::else_body() const -> Expr {
+    return n.cast_nth_match<Expr>(2).value();
+}
+
+inline auto WhileLoop::condition() const -> Expr {
+    return n.cast_first_match<Expr>().value();
+}
+
+inline auto WhileLoop::body() const -> Expr {
+    return n.cast_last_match<Expr>().value();
 }
 
 } // namespace ast
@@ -235,6 +286,7 @@ IMPL_TYPED0(Int)
 IMPL_TYPED0(Float)
 IMPL_TYPED0(Bool)
 
+IMPL_TYPED(Code)
 IMPL_TYPED(CodeBlock)
 IMPL_TYPED(Parenthesized)
 IMPL_TYPED(MatrixRow)
@@ -243,6 +295,14 @@ IMPL_TYPED(Unary)
 IMPL_TYPED(Binary)
 IMPL_TYPED(FieldAccess)
 IMPL_TYPED(FuncCall)
+IMPL_TYPED(Args)
+
+IMPL_TYPED(Conditional)
+IMPL_TYPED(WhileLoop)
+IMPL_TYPED(ForLoop)
+IMPL_TYPED(LoopBreak)
+IMPL_TYPED(LoopContinue)
+IMPL_TYPED(FuncReturn)
 
 #undef IMPL_TYPED0
 #undef IMPL_TYPED
@@ -268,6 +328,12 @@ inline auto from_untyped<ast::Expr>(const SyntaxNode& node) -> std::optional<ast
         case SyntaxKind::Binary:        return ast::Binary{node};
         case SyntaxKind::FieldAccess:   return ast::FieldAccess{node};
         case SyntaxKind::FuncCall:      return ast::FuncCall{node};
+        case SyntaxKind::Conditional:   return ast::Conditional{node};
+        case SyntaxKind::WhileLoop:     return ast::WhileLoop{node};
+        case SyntaxKind::ForLoop:       return ast::ForLoop{node};
+        case SyntaxKind::LoopBreak:     return ast::LoopBreak{node};
+        case SyntaxKind::LoopContinue:  return ast::LoopContinue{node};
+        case SyntaxKind::FuncReturn:    return ast::FuncReturn{node};
         default:                        return std::nullopt;
         }
     }

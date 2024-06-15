@@ -27,7 +27,7 @@ auto eval_string(std::string_view str, Vm& vm) -> diag::SourceResult<Value> {
                                std::ranges::to<std::vector>()};
     }
 
-    auto output = eval(root.cast<ast::CodeBlock>().value(), vm);
+    auto output = eval(root.cast<ast::Code>().value(), vm);
 
     return output;
 }
@@ -45,7 +45,7 @@ auto try_eval_string(std::string_view str, Vm& vm) -> std::optional<diag::Source
                                std::ranges::to<std::vector>()};
     }
 
-    auto output = eval(root.cast<ast::CodeBlock>().value(), vm);
+    auto output = eval(root.cast<ast::Code>().value(), vm);
 
     return output;
 }
