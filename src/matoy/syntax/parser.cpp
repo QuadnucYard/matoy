@@ -49,10 +49,9 @@ struct Parser::Impl {
 
         while (true) {
             if (p.directly_at(Token::LParen) || p.directly_at(Token::LBracket)) {
-                throw "unimplemented!";
-                // args(p);
-                // p.wrap(m, SyntaxKind::FuncCall);
-                // continue;
+                args(p);
+                p.reduce(m, SyntaxKind::FuncCall);
+                continue;
             }
 
             auto at_field_or_method = p.directly_at(Token::Dot) && Lexer{p.lexer}.next_token() == Token::Ident;
@@ -119,6 +118,34 @@ struct Parser::Impl {
         code_expr(p);
         p.expect_closing_delimiter(m, Token::RParen);
         p.reduce(m, SyntaxKind::Parenthesized);
+    }
+
+    static auto args(Parser& p) -> void {
+        if (!p.at(Token::LParen)) {
+            p.expected("argument list");
+        }
+
+        auto m = p.marker();
+
+        // Parses a normal positional argument or an argument name.
+        p.assert_cur(Token::LParen);
+
+        while (!is_terminator(p.current)) {
+            if (!p.at(sets::expr)) {
+                p.unexpected();
+                continue;
+            }
+
+            code_expr(p);
+
+            if (!is_terminator(p.current)) {
+                p.expect(Token::Comma);
+            }
+        }
+
+        p.expect_closing_delimiter(m, Token::RParen);
+
+        p.reduce(m, SyntaxKind::Args);
     }
 
     /**

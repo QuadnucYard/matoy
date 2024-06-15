@@ -83,9 +83,15 @@ struct FieldAccess : AstNode {
     auto field() const -> Ident;
 };
 
-struct FuncCall : AstNode {};
+struct Args : AstNode {
+    auto items() const;
+};
 
-struct Args : AstNode {};
+struct FuncCall : AstNode {
+    auto callee() const -> Expr;
+
+    auto args() const -> Args;
+};
 
 struct Unary : AstNode {
     auto op() const -> UnOp {
@@ -181,6 +187,24 @@ inline auto FieldAccess::target() const -> Expr {
 
 inline auto FieldAccess::field() const -> Ident {
     return n.cast_last_match<Ident>().value();
+}
+
+inline auto Args::items() const {
+    std::vector<Expr> res;
+    for (auto& child : n.as_inner()->children) {
+        if (auto e = child.cast<Expr>()) {
+            res.push_back(*e);
+        }
+    }
+    return res;
+}
+
+inline auto FuncCall::callee() const -> Expr {
+    return n.cast_first_match<Expr>().value();
+}
+
+inline auto FuncCall::args() const -> Args {
+    return n.cast_last_match<Args>().value();
 }
 
 } // namespace ast
