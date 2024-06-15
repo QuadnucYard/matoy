@@ -2,8 +2,8 @@
 
 #include "matoy/diag.hpp"
 #include "matoy/eval/access.hpp"
+#include "matoy/eval/fields.hpp"
 #include "matoy/eval/ops.hpp"
-#include "matoy/foundations/fields.hpp"
 #include "matoy/foundations/matrix.hpp"
 #include "matoy/foundations/value.hpp"
 #include "matoy/syntax/ast.hpp"
