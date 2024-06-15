@@ -148,6 +148,11 @@ struct Lexer::Impl {
                 return Token::ColonEq;
             }
             return Token::Colon;
+        case '~':
+            if (l.s.eat_if('=')) {
+                return Token::TildeEq;
+            }
+            return Token::Tilde;
         case ',': return Token::Comma;
         case ';': return Token::Semicolon;
         case '(': return Token::LParen;

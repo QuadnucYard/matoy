@@ -1,6 +1,5 @@
 #include "matrix_op.hpp"
 #include <cassert>
-#include <limits>
 
 namespace matoy::foundations {
 

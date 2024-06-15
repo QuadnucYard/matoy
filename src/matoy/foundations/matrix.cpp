@@ -1,4 +1,5 @@
 #include "matrix.hpp"
+#include <algorithm>
 #include <cassert>
 
 namespace matoy::foundations {

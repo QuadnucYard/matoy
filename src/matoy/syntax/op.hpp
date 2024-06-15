@@ -26,6 +26,8 @@ enum class BinOp {
     Gt,  // >
     Geq, // >=
 
+    Approx, // ~=
+
     And, // and
     Or,  // or
 
@@ -64,6 +66,7 @@ inline auto binop_from_token(Token token) -> std::optional<BinOp> {
     case Token::Gt:      return BinOp::Gt;
     case Token::GtEq:    return BinOp::Geq;
     case Token::ColonEq: return BinOp::DeclAssign;
+    case Token::TildeEq: return BinOp::Approx;
     case Token::And:     return BinOp::And;
     case Token::Or:      return BinOp::Or;
     default:             return std::nullopt;
@@ -89,7 +92,8 @@ inline auto precedence(BinOp op) -> int {
     case BinOp::Lt:
     case BinOp::Leq:
     case BinOp::Gt:
-    case BinOp::Geq:        return 4;
+    case BinOp::Geq:
+    case BinOp::Approx:     return 4;
     case BinOp::And:        return 3;
     case BinOp::Or:         return 2;
     case BinOp::Assign:
@@ -113,6 +117,7 @@ inline auto assoc(BinOp op) -> Assoc {
     case BinOp::Leq:
     case BinOp::Gt:
     case BinOp::Geq:
+    case BinOp::Approx:
     case BinOp::And:
     case BinOp::Or:         return Assoc::Left;
     case BinOp::Assign:

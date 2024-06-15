@@ -36,6 +36,8 @@ enum class Token : int8_t {
     Gt,      //  >
     GtEq,    // >=
     ColonEq, // :=
+    Tilde,   // ~
+    TildeEq, // ~=
 
     LParen,   // (
     RParen,   // )
@@ -103,6 +105,8 @@ inline auto get_name(Token self) -> std::string_view {
     case Token::Gt:      return "greater-than operator";
     case Token::GtEq:    return "greater-than or equal operator";
     case Token::ColonEq: return "declaration-assign operator";
+    case Token::Tilde:   return "tilde";
+    case Token::TildeEq: return "approximate equality operator";
 
     case Token::LParen:   return "opening paren";
     case Token::RParen:   return "closing paren";

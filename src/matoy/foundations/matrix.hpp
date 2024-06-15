@@ -1,5 +1,7 @@
 #pragma once
 
+#include "approx.hpp"
+#include <algorithm>
 #include <format>
 #include <initializer_list>
 #include <mdspan>
@@ -55,6 +57,14 @@ class Matrix {
 
     auto view() {
         return std::mdspan(data_.data(), rows_, cols_);
+    }
+
+    auto buffer() const -> const auto& {
+        return data_;
+    }
+
+    auto buffer() -> auto& {
+        return data_;
     }
 
     Self transposed() const;
@@ -131,6 +141,12 @@ class Matrix {
 
     friend struct std::formatter<matoy::foundations::Matrix>;
 };
+
+template <>
+inline auto approx(const Matrix& x, const Matrix& y, int ulp) -> bool {
+    return x.shape() == y.shape() &&
+           std::ranges::equal(x.buffer(), y.buffer(), [ulp](auto& x, auto& y) { return approx(x, y, ulp); });
+}
 
 } // namespace matoy::foundations
 

@@ -2,6 +2,7 @@
 
 #include "fwd.hpp"
 #include "matoy/diag.hpp"
+#include "matoy/foundations/approx.hpp"
 #include "matoy/utils/match.hpp"
 #include <compare>
 #include <type_traits>
@@ -136,6 +137,14 @@ inline auto gt(Value lhs, Value rhs) -> ValueResult {
 
 inline auto geq(Value lhs, Value rhs) -> ValueResult {
     return compare(lhs, rhs).transform([](auto ord) { return ord >= 0; });
+}
+
+inline auto aeq(Value lhs, Value rhs) -> ValueResult {
+    return std::visit<ValueResult>(
+        utils::overloaded{
+            []<class T>(T&& a, T&& b) { return foundations::approx(a, b); },
+            [](auto&& a, auto&& b) { return diag::hint_error(std::format("cannot compare {} and {}", a, b)); }},
+        lhs, rhs);
 }
 
 } // namespace matoy::eval

@@ -112,6 +112,8 @@ inline auto eval(const ast::Binary& self, Vm& vm) -> diag::SourceResult<Value> {
     case syntax::BinOp::Gt:  return apply_binary(self, vm, gt);
     case syntax::BinOp::Geq: return apply_binary(self, vm, geq);
 
+    case syntax::BinOp::Approx: return apply_binary(self, vm, aeq);
+
     case syntax::BinOp::And: return apply_binary(self, vm, and_);
     case syntax::BinOp::Or:  return apply_binary(self, vm, or_);
 
