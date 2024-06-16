@@ -24,7 +24,8 @@ struct Parser::Impl {
             if (p.at(sets::expr)) {
                 code_expr(p);
                 if (!p.end() && !stop(p) && !p.eat_if(Token::Semicolon)) {
-                    p.expected("semicolon or line break");
+                    // TODO handle statement deliminator
+                    // p.expected("semicolon or line break");
                 }
             } else if (!p.end()) {
                 p.unexpected();
