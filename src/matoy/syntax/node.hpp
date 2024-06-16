@@ -151,16 +151,9 @@ struct SyntaxNode {
 
     /// Convert the child to an error stating that the given thing was
     /// expected, but the current kind was found.
-    void expected_token(std::string_view expected) {
-        auto token = this->token();
-        convert_to_error(std::format("expected {}, found {}", expected, get_name(token)));
-        // TODO check is_keyword
-    }
+    void expected_token(std::string_view expected);
 
-    void unexpected() {
-        auto token = this->token();
-        convert_to_error(std::format("unexpected {}", get_name(token)));
-    }
+    void unexpected();
 
     /// Whether the node can be cast to the given AST node.
     template <typename T>

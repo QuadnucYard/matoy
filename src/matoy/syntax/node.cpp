@@ -97,6 +97,17 @@ void SyntaxNode::convert_to_kind(SyntaxKind kind) {
     });
 }
 
+void SyntaxNode::expected_token(std::string_view expected) {
+    auto token = this->token();
+    convert_to_error(std::format("expected {}, found {}", expected, get_name(token)));
+    // TODO check is_keyword
+}
+
+void SyntaxNode::unexpected() {
+    auto token = this->token();
+    convert_to_error(std::format("unexpected {}", get_name(token)));
+}
+
 InnerNode::InnerNode(SyntaxKind kind, std::string_view text, std::vector<SyntaxNode> children)
     : kind{kind}, text{text}, span{}, children{std::move(children)} {
     for (auto& child : this->children) {
