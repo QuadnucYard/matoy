@@ -1,16 +1,11 @@
-#pragma once
-
+#include "cast.hpp"
 #include "fwd.hpp"
-#include "matoy/diag.hpp"
-#include "matoy/eval/cast.hpp"
-#include "matoy/eval/vm.hpp"
-#include "matoy/foundations/value.hpp"
-#include "matoy/syntax/ast.hpp"
+#include "vm.hpp"
 
 namespace matoy::eval {
 
 template <>
-inline auto eval(const ast::Conditional& self, Vm& vm) -> diag::SourceResult<Value> {
+auto eval(const ast::Conditional& self, Vm& vm) -> diag::SourceResult<Value> {
     const auto condition = self.condition();
     const auto cond = eval(condition, vm);
     if (!cond)
@@ -30,7 +25,7 @@ inline auto eval(const ast::Conditional& self, Vm& vm) -> diag::SourceResult<Val
 }
 
 template <>
-inline auto eval(const ast::WhileLoop& self, Vm& vm) -> diag::SourceResult<Value> {
+auto eval(const ast::WhileLoop& self, Vm& vm) -> diag::SourceResult<Value> {
     const auto flow = std::move(vm.flow);
     const auto condition = self.condition();
     const auto body = self.body();
@@ -66,12 +61,12 @@ inline auto eval(const ast::WhileLoop& self, Vm& vm) -> diag::SourceResult<Value
 }
 
 template <>
-inline auto eval(const ast::ForLoop&, Vm&) -> diag::SourceResult<Value> {
+auto eval(const ast::ForLoop&, Vm&) -> diag::SourceResult<Value> {
     return {};
 }
 
 template <>
-inline auto eval(const ast::LoopBreak& self, Vm& vm) -> diag::SourceResult<Value> {
+auto eval(const ast::LoopBreak& self, Vm& vm) -> diag::SourceResult<Value> {
     if (!vm.flow) {
         vm.flow = FlowBreak{self.span()};
     }
@@ -79,7 +74,7 @@ inline auto eval(const ast::LoopBreak& self, Vm& vm) -> diag::SourceResult<Value
 }
 
 template <>
-inline auto eval(const ast::LoopContinue& self, Vm& vm) -> diag::SourceResult<Value> {
+auto eval(const ast::LoopContinue& self, Vm& vm) -> diag::SourceResult<Value> {
     if (!vm.flow) {
         vm.flow = FlowContinue{self.span()};
     }
@@ -87,7 +82,7 @@ inline auto eval(const ast::LoopContinue& self, Vm& vm) -> diag::SourceResult<Va
 }
 
 template <>
-inline auto eval(const ast::FuncReturn& self, Vm& vm) -> diag::SourceResult<Value> {
+auto eval(const ast::FuncReturn& self, Vm& vm) -> diag::SourceResult<Value> {
     auto value = self.body().transform([&vm](auto&& v) { return eval(v, vm); });
     if (value && !*value) {
         return std::move(*value);
