@@ -2,7 +2,7 @@
 
 #include "matoy/diag.hpp"
 #include "matoy/foundations/value.hpp"
-#include "matoy/syntax/ast.hpp"
+#include "matoy/syntax/ast_fwd.hpp"
 
 namespace matoy::eval {
 

@@ -3,8 +3,9 @@
 #include "matoy/eval/fields.hpp"
 #include "matoy/eval/fwd.hpp"
 #include "matoy/eval/ops.hpp"
+#include "matoy/eval/vm.hpp"
+#include "matoy/syntax/ast.hpp"
 #include "matoy/syntax/op.hpp"
-#include "vm.hpp"
 
 namespace matoy::eval {
 

@@ -1,6 +1,7 @@
-#include "cast.hpp"
-#include "fwd.hpp"
-#include "vm.hpp"
+#include "matoy/eval/cast.hpp"
+#include "matoy/eval/fwd.hpp"
+#include "matoy/eval/vm.hpp"
+#include "matoy/syntax/ast.hpp"
 
 namespace matoy::eval {
 

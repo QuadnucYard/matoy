@@ -1,4 +1,5 @@
 #include "ops.hpp"
+#include "matoy/utils/match.hpp"
 
 namespace matoy::eval {
 

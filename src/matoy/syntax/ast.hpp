@@ -1,11 +1,11 @@
 #pragma once
 
-#include "matoy/syntax/node.hpp"
-#include "matoy/syntax/op.hpp"
+#include "ast_fwd.hpp"
+#include "node.hpp"
+#include "op.hpp"
 #include <optional>
 #include <string_view>
 #include <utility>
-#include <variant>
 
 namespace matoy::syntax {
 
@@ -36,23 +36,6 @@ struct Float : AstNode {
 struct Bool : AstNode {
     auto get() const -> bool;
 };
-
-struct CodeBlock;
-struct Parenthesized;
-struct MatrixRow;
-struct Matrix;
-struct Unary;
-struct Binary;
-struct FieldAccess;
-struct FuncCall;
-struct Conditional;
-struct WhileLoop;
-struct ForLoop;
-struct LoopBreak;
-struct LoopContinue;
-struct FuncReturn;
-using Expr = std::variant<CodeBlock, Ident, None, Int, Float, Bool, Parenthesized, Matrix, Unary, Binary, FieldAccess,
-                          FuncCall, Conditional, WhileLoop, ForLoop, LoopBreak, LoopContinue, FuncReturn>;
 
 struct Code : AstNode {
     auto exprs() const -> std::vector<Expr>;

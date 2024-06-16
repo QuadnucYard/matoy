@@ -1,5 +1,6 @@
 #include "access.hpp"
 #include "matoy/eval/vm.hpp"
+#include "matoy/syntax/ast.hpp"
 
 namespace matoy::eval {
 
