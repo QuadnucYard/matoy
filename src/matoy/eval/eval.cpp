@@ -1,6 +1,7 @@
 #include "eval.hpp"
 #include "matoy/diag.hpp"
 #include "matoy/eval/code.hpp"
+#include "matoy/eval/flow.hpp"
 #include "matoy/eval/vm.hpp"
 #include "matoy/syntax/ast.hpp"
 #include "matoy/syntax/parser.hpp"

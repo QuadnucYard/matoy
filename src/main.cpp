@@ -78,11 +78,14 @@ void test_parser() {
 
 void test_eval() {
     std::string_view input{R"(
-    A := [1 + 6, 2 - (4 * 1);
-            -31,        4.73]
-    B := [1, 2]
-    C := [3, 4].T
-    B * C
+    i := 0
+    s := 1
+    while i < 5 {
+        s *= 2
+        i += 1
+    }
+    i
+    s
     )"};
     print_tokens(input);
     print_syntax(input);
@@ -95,8 +98,8 @@ void test_eval() {
 }
 
 int main() {
-    test_parser();
-    // test_eval();
+    // test_parser();
+    test_eval();
     Console console;
     console.start();
     console.loop();

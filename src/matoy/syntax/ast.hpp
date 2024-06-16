@@ -125,7 +125,7 @@ struct Conditional : AstNode {
 
     auto if_body() const -> Expr;
 
-    auto else_body() const -> Expr;
+    auto else_body() const -> std::optional<Expr>;
 };
 
 struct WhileLoop : AstNode {
@@ -246,8 +246,8 @@ inline auto Conditional::if_body() const -> Expr {
     return n.cast_nth_match<Expr>(1).value();
 }
 
-inline auto Conditional::else_body() const -> Expr {
-    return n.cast_nth_match<Expr>(2).value();
+inline auto Conditional::else_body() const -> std::optional<Expr> {
+    return n.cast_nth_match<Expr>(2);
 }
 
 inline auto WhileLoop::condition() const -> Expr {

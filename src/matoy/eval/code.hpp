@@ -3,7 +3,6 @@
 #include "matoy/diag.hpp"
 #include "matoy/eval/access.hpp"
 #include "matoy/eval/fields.hpp"
-#include "matoy/eval/flow.hpp"
 #include "matoy/eval/fwd.hpp"
 #include "matoy/eval/ops.hpp"
 #include "matoy/foundations/matrix.hpp"
@@ -11,11 +10,8 @@
 #include "matoy/syntax/ast.hpp"
 #include "matoy/syntax/op.hpp"
 #include "vm.hpp"
-#include <variant>
 
 namespace matoy::eval {
-
-template <> auto eval(const ast::Expr& self, Vm& vm) -> diag::SourceResult<Value>;
 
 auto apply_unary(const ast::Unary& unary, Vm& vm, auto op(Value)->ValueResult) -> diag::SourceResult<Value>;
 
@@ -89,8 +85,10 @@ inline auto eval(const ast::Code& self, Vm& vm) -> diag::SourceResult<Value> {
 
 template <>
 inline auto eval(const ast::CodeBlock& self, Vm& vm) -> diag::SourceResult<Value> {
-    // TODO scope
-    return eval(self.body(), vm);
+    vm.scopes.enter();
+    auto output = eval(self.body(), vm);
+    vm.scopes.exit();
+    return output;
 }
 
 template <>
